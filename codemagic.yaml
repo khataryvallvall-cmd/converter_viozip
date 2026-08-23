@@ -5,12 +5,19 @@ workflows:
     environment:
       vars:
         PACKAGE_NAME: "com.khataryvallvall.convertervio"
+      groups:
+        - signing
     scripts:
       - name: Set execute permission for gradlew
         script: |
           chmod +x ./gradlew
-      - name: Build debug APK
+      - name: Decode signing keystore
         script: |
-          ./gradlew assembleDebug
+          echo $CM_KEYSTORE | base64 --decode > /tmp/keystore.jks
+          echo "CM_KEYSTORE_PATH=/tmp/keystore.jks" >> $CM_ENV
+      - name: Build signed release bundle and APK
+        script: |
+          ./gradlew bundleRelease assembleRelease
     artifacts:
-      - app/build/outputs/**/*.apk
+      - app/build/outputs/bundle/release/*.aab
+      - app/build/outputs/apk/release/*.apk
