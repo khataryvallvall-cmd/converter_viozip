@@ -2404,8 +2404,8 @@
             // ── المصدر الأساسي: fawazahmed0 عبر jsDelivr ──
             try {
                 const r = await fetch(
-                    'https://cdn.jsdelivr.net/npm/@fawazahmed0/currency-api@latest/v1/currencies/usd.min.json',
-                    { signal: AbortSignal.timeout(8000) }
+                    'https://cdn.jsdelivr.net/npm/@fawazahmed0/currency-api@latest/v1/currencies/usd.min.json?_=' + Date.now(),
+                    { signal: AbortSignal.timeout(8000), cache: 'no-store' }
                 );
                 if (r.ok) {
                     const data = await r.json();
@@ -2425,8 +2425,8 @@
             if (!result) {
                 try {
                     const r = await fetch(
-                        'https://latest.currency-api.pages.dev/v1/currencies/usd.min.json',
-                        { signal: AbortSignal.timeout(8000) }
+                        'https://latest.currency-api.pages.dev/v1/currencies/usd.min.json?_=' + Date.now(),
+                        { signal: AbortSignal.timeout(8000), cache: 'no-store' }
                     );
                     if (r.ok) {
                         const data = await r.json();
@@ -2474,7 +2474,7 @@
                 const symbols = ['BTCUSDT','ETHUSDT','BNBUSDT','SOLUSDT','XRPUSDT','DOGEUSDT','ADAUSDT','TRXUSDT','AVAXUSDT','LINKUSDT','TONUSDT','PAXGUSDT','HYPEUSDT'];
                 const r = await fetch(
                     `https://api.binance.com/api/v3/ticker/price?symbols=${JSON.stringify(symbols)}`,
-                    { signal: AbortSignal.timeout(8000) }
+                    { signal: AbortSignal.timeout(8000), cache: 'no-store' }
                 );
                 if (r.ok) {
                     const data = await r.json();
@@ -2510,7 +2510,7 @@
                     const ids = 'bitcoin,ethereum,tether,binancecoin,solana,ripple,usd-coin,dogecoin,cardano,tron,avalanche-2,chainlink,the-open-network,pax-gold,hyperliquid';
                     const r = await fetch(
                         `https://api.coingecko.com/api/v3/simple/price?ids=${ids}&vs_currencies=usd`,
-                        { signal: AbortSignal.timeout(8000) }
+                        { signal: AbortSignal.timeout(8000), cache: 'no-store' }
                     );
                     if (r.ok) {
                         const data = await r.json();
