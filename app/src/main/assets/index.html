@@ -294,16 +294,56 @@
             font-family: sans-serif;
         }
 
-        .currency-input {
+        .value-wrap {
             flex: 1;
+            display: flex;
             background-color: #353535;
             border-radius: 999px;
+            overflow: hidden;
+            min-width: 0;
+        }
+
+        .currency-row.active .value-wrap {
+            background-color: #4a3a23;
+        }
+
+        .copy-reveal-btn {
+            width: 0;
+            flex-shrink: 0;
+            overflow: hidden;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background-color: transparent;
+            border: none;
+            color: #ffffff;
+            cursor: pointer;
+            padding: 0;
+            transition: width 0.25s ease;
+        }
+
+        .copy-reveal-btn.show {
+            width: 46px;
+        }
+
+        .value-wrap:has(.copy-reveal-btn.show) {
+            gap: 2px;
+        }
+
+        .copy-reveal-btn svg {
+            flex-shrink: 0;
+        }
+
+        .currency-input {
+            flex: 1;
+            background-color: transparent;
+            border-radius: 0;
             display: flex;
             align-items: center;
             justify-content: flex-end;
             padding: 0 20px;
             font-weight: 700; 
-            transition: font-size 0.1s ease, background-color 0.2s ease;
+            transition: font-size 0.1s ease;
             overflow: hidden;
             white-space: nowrap;
             cursor: pointer;
@@ -313,46 +353,7 @@
         }
 
         .currency-row.active .currency-input {
-            background-color: #4a3a23;
             color: #ff9800;
-        }
-
-        /* ── Copy Popup ── */
-        .copy-popup {
-            position: fixed;
-            background-color: #2a2a2a;
-            border: none;
-            border-radius: 50px;
-            padding: 10px 22px;
-            color: #ffffff;
-            font-size: 14px;
-            font-weight: 700;
-            z-index: 9999;
-            pointer-events: auto;
-            box-shadow: 0 4px 16px rgba(0,0,0,0.6);
-            display: none;
-            align-items: center;
-            justify-content: center;
-            gap: 7px;
-            user-select: none;
-            -webkit-user-select: none;
-        }
-        .copy-popup svg {
-            flex-shrink: 0;
-        }
-        .copy-popup::after {
-            content: '';
-            position: absolute;
-            bottom: -7px;
-            left: 50%;
-            transform: translateX(-50%);
-            width: 0; height: 0;
-            border-left: 7px solid transparent;
-            border-right: 7px solid transparent;
-            border-top: 7px solid #2a2a2a;
-        }
-        .copy-popup.copied {
-            color: #4CAF50;
         }
 
         .keypad-section {
@@ -384,8 +385,8 @@
         }
 
         .btn-orange:active {
-            transform: none;
-            opacity: 1;
+            opacity: 0.9;
+            transform: scale(0.96);
         }
 
         .btn-dark {
@@ -1147,7 +1148,6 @@
     </div>
 
     <!-- Copy popup -->
-    <div class="copy-popup" id="copy-popup"></div>
 
     <script>
 
@@ -1832,49 +1832,124 @@
         const rows = document.querySelectorAll('.currency-row');
         const currenciesBackBtn = document.getElementById('currencies-back-btn');
 
-        // ── Long-press copy system ──
-        const copyPopup = document.getElementById('copy-popup');
+        // ── Inline slide-reveal copy system ──
         let copyPressTimer = null;
+        let copyModeActive = false;
 
-        const COPY_ICON  = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>';
+        const COPY_ICON  = '<svg width="19" height="19" viewBox="0 0 24 24" fill="currentColor"><path d="M11,17H4A2,2 0 0,1 2,15V3A2,2 0 0,1 4,1H16V3H4V15H11V13L15,16L11,19V17M19,21V7H8V13H6V7A2,2 0 0,1 8,5H19A2,2 0 0,1 21,7V21A2,2 0 0,1 19,23H8A2,2 0 0,1 6,21V19H8V21H19Z"></path></svg>';
+        const CHECK_ICON = '<svg width="19" height="19" viewBox="0 0 24 24" fill="currentColor"><path fill-rule="evenodd" d="M19.916 4.626a.75.75 0 0 1 .208 1.04l-9 13.5a.75.75 0 0 1-1.154.114l-6-6a.75.75 0 0 1 1.06-1.06l5.353 5.353 8.493-12.74a.75.75 0 0 1 1.04-.207Z" clip-rule="evenodd"></path></svg>';
+        const PASTE_ICON = '<svg width="19" height="19" viewBox="0 0 24 24" fill="currentColor"><path d="M19,20H5V4H7V7H17V4H19M12,2A1,1 0 0,1 13,3A1,1 0 0,1 12,4A1,1 0 0,1 11,3A1,1 0 0,1 12,2M19,2H14.82C14.4,0.84 13.3,0 12,0C10.7,0 9.6,0.84 9.18,2H5A2,2 0 0,0 3,4V20A2,2 0 0,0 5,22H19A2,2 0 0,0 21,20V4A2,2 0 0,0 19,2Z"></path></svg>';
 
-        function positionPopup(element) {
-            const rect = element.getBoundingClientRect();
-            copyPopup.style.display = 'flex';
-            const popupW = copyPopup.offsetWidth || 110;
-            let left = rect.left + (rect.width / 2) - (popupW / 2);
-            if (left < 8) left = 8;
-            if (left + popupW > window.innerWidth - 8) left = window.innerWidth - popupW - 8;
-            copyPopup.style.left = left + 'px';
-            copyPopup.style.top  = (rect.top - 48) + 'px';
+        // ── التعامل مع الحافظة: عن طريق جسر أندرويد الأصلي إن وُجد (أدق وأضمن)، وإلا عبر واجهة المتصفح ──
+        async function readClipboardText() {
+            if (window.AndroidClipboard && typeof window.AndroidClipboard.getClipboardText === 'function') {
+                try { return window.AndroidClipboard.getClipboardText() || ''; } catch(e) { return ''; }
+            }
+            try { return await navigator.clipboard.readText(); } catch(e) { return ''; }
         }
 
-        function showCopyPopup(element, value) {
-            copyPopup.innerHTML = COPY_ICON + '<span>' + (translations[currentLang].copyLabel || 'نسخ') + '</span>';
-            copyPopup.classList.remove('copied');
-            positionPopup(element);
-
-            copyPopup.onclick = () => {
-                const plainValue = value.replace(/,/g, '');
-                const finish = () => {
-                    copyPopup.innerHTML = '<span>' + (translations[currentLang].copiedLabel || 'تم') + '</span>';
-                    copyPopup.classList.add('copied');
-                    setTimeout(() => { copyPopup.style.display = 'none'; }, 1200);
-                };
-                navigator.clipboard.writeText(plainValue).then(finish).catch(() => {
+        function writeClipboardText(text) {
+            return new Promise((resolve) => {
+                if (window.AndroidClipboard && typeof window.AndroidClipboard.setClipboardText === 'function') {
+                    try { window.AndroidClipboard.setClipboardText(text); resolve(); return; } catch(e) {}
+                }
+                navigator.clipboard.writeText(text).then(resolve).catch(() => {
                     const ta = document.createElement('textarea');
-                    ta.value = plainValue;
+                    ta.value = text;
                     document.body.appendChild(ta);
                     ta.select();
                     document.execCommand('copy');
                     document.body.removeChild(ta);
-                    finish();
+                    resolve();
                 });
-            };
+            });
+        }
+
+        // يلف كل .currency-input بغلاف مشترك مع زري اللصق والنسخ القابلين للظهور، بدون تعديل الـ HTML الثابت
+        function setupCopyReveal() {
+            document.querySelectorAll('.currency-input').forEach(input => {
+                if (input.dataset.revealReady) return;
+                input.dataset.revealReady = '1';
+                const row = input.closest('.currency-row');
+                const wrap = document.createElement('div');
+                wrap.className = 'value-wrap';
+
+                const pasteBtn = document.createElement('button');
+                pasteBtn.type = 'button';
+                pasteBtn.className = 'copy-reveal-btn';
+                pasteBtn.innerHTML = PASTE_ICON;
+
+                const copyBtn = document.createElement('button');
+                copyBtn.type = 'button';
+                copyBtn.className = 'copy-reveal-btn';
+                copyBtn.innerHTML = COPY_ICON;
+
+                input.parentNode.insertBefore(wrap, input);
+                wrap.appendChild(pasteBtn);
+                wrap.appendChild(copyBtn);
+                wrap.appendChild(input);
+
+                copyBtn.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    const plainValue = input.textContent.replace(/,/g, '');
+                    writeClipboardText(plainValue).then(() => {
+                        copyBtn.innerHTML = CHECK_ICON;
+                        setTimeout(() => {
+                            collapseAllReveals();
+                            copyModeActive = false;
+                            setTimeout(() => { copyBtn.innerHTML = COPY_ICON; }, 250);
+                        }, 900);
+                    });
+                });
+
+                pasteBtn.addEventListener('click', async (e) => {
+                    e.stopPropagation();
+                    const text = await readClipboardText();
+                    const match = (text || '').replace(/,/g, '').match(/-?\d+(\.\d+)?/);
+                    const ok = () => {
+                        pasteBtn.innerHTML = CHECK_ICON;
+                        setTimeout(() => {
+                            collapseAllReveals();
+                            copyModeActive = false;
+                            setTimeout(() => { pasteBtn.innerHTML = PASTE_ICON; }, 250);
+                        }, 900);
+                    };
+                    if (!match) { return; }
+                    rows.forEach(r => r.classList.remove('active'));
+                    row.classList.add('active');
+                    calcState.firstOperand = null;
+                    calcState.waitingForSecondOperand = false;
+                    calcState.operator = null;
+                    removeOperatorStyles();
+                    calcState.displayValue = match[0];
+                    if (typeof onBaseCurrencyChanged === 'function') onBaseCurrencyChanged();
+                    saveAppState();
+                    updateDisplay();
+                    ok();
+                });
+            });
+        }
+        setupCopyReveal();
+
+        function collapseAllReveals() {
+            document.querySelectorAll('.copy-reveal-btn.show').forEach(b => b.classList.remove('show'));
+        }
+
+        function revealCopyButton(input) {
+            const wrap = input.closest('.value-wrap');
+            if (!wrap) return;
+            const btns = wrap.querySelectorAll('.copy-reveal-btn');
+            if (!btns.length) return;
+            collapseAllReveals();
+            btns.forEach(b => b.classList.add('show'));
+            copyModeActive = true;
         }
 
         document.addEventListener('click', (e) => {
-            if (e.target !== copyPopup && !copyPopup.contains(e.target)) copyPopup.style.display = 'none';
+            if (!e.target.classList.contains('copy-reveal-btn') && !e.target.closest('.copy-reveal-btn') && !e.target.classList.contains('currency-input')) {
+                collapseAllReveals();
+                copyModeActive = false;
+            }
         });
 
         rows.forEach(row => {
@@ -1903,10 +1978,15 @@
             });
 
             input.addEventListener('touchstart', (e) => {
+                if (copyModeActive) {
+                    const val = input.textContent;
+                    if (val && val !== '0') revealCopyButton(input);
+                    return;
+                }
                 copyPressTimer = setTimeout(() => {
                     const val = input.textContent;
                     if (val && val !== '0') {
-                        showCopyPopup(input, val);
+                        revealCopyButton(input);
                     }
                 }, 500);
             }, { passive: true });
