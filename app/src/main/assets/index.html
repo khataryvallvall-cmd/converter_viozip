@@ -319,7 +319,7 @@
             color: #ffffff;
             cursor: pointer;
             padding: 0;
-            transition: width 0.25s ease;
+            transition: width 0.1s ease-out;
         }
 
         .copy-reveal-btn.show {
@@ -926,7 +926,7 @@
         .rate-card-title-wrap { flex:1; text-align:right; }
         .rate-card-code { color:#fff; font-size:16px; font-weight:800; letter-spacing:0.3px; }
         .rate-card-sub { color:#8a8a8a; font-size:11.5px; font-weight:600; margin-top:1px; }
-        .rate-card-badge { background:linear-gradient(135deg,#ff9800,#ff7043); color:#000; font-size:10px; font-weight:800; padding:3px 9px; border-radius:20px; flex-shrink:0; white-space:nowrap; }
+        .rate-card-badge { display:flex; align-items:center; justify-content:center; flex-shrink:0; }
         .rate-card-body { display:grid; grid-template-columns:1fr 1fr; gap:9px; }
         .rate-card-item { display:flex; align-items:center; justify-content:flex-end; gap:9px; background:#242424; border-radius:13px; padding:10px 12px; }
         .rate-card-item-flag { width:24px; height:24px; border-radius:50%; object-fit:cover; flex-shrink:0; }
@@ -954,13 +954,13 @@
             
             <div class="header-right">
                 <button type="button" class="live-stats-btn" id="open-crypto-prices-btn">
-                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#ff9800" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#ffb74d" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                         <polyline points="22 7 13.5 15.5 8.5 10.5 2 17"></polyline>
                         <polyline points="16 7 22 7 22 13"></polyline>
                     </svg>
                 </button>
                 <button type="button" class="live-stats-btn" id="open-rates-btn">
-                    <svg width="24" height="24" viewBox="0 0 24 24" fill="#ff9800">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="#ffb74d">
                         <path d="M11.5,1L2,6V8H21V6M16,10V17H19V10M2,22H21V19H2M10,10V17H13V10M4,10V17H7V10H4Z"></path>
                     </svg>
                 </button>
@@ -1081,14 +1081,14 @@
                 </button>
                 <div id="currency-list-title" style="display:flex;align-items:center;gap:6px;color:#fff;font-size:15px;font-weight:700;white-space:nowrap;flex-shrink:0;">
                     <span id="currency-list-title-text">العملات الدولية</span>
-                    <svg id="currency-list-title-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#ff9800" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <svg id="currency-list-title-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#ffb74d" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                         <rect x="2" y="6" width="20" height="12" rx="2"></rect>
                         <circle cx="12" cy="12" r="3"></circle>
                         <path d="M6 12h.01M18 12h.01"></path>
                     </svg>
                 </div>
                 <button type="button" id="toggle-currency-list-btn" style="background:none;border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;width:36px;height:36px;flex-shrink:0;">
-                    <svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="#ff9800" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round">
+                    <svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="#ffb74d" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round">
                         <path d="M8 3 4 7l4 4"></path>
                         <path d="M4 7h16"></path>
                         <path d="m16 21 4-4-4-4"></path>
@@ -1112,7 +1112,7 @@
                     <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#ffb74d" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"></polyline></svg>
                 </button>
                 <div style="flex:1;text-align:right;direction:rtl;">
-                    <div style="color:#fff;font-size:17px;font-weight:700;" id="lbl-rates-title">معدل التحويل <svg width="16" height="16" viewBox="0 0 24 24" fill="#ff9800" style="vertical-align:middle;"><path d="M11.5,1L2,6V8H21V6M16,10V17H19V10M2,22H21V19H2M10,10V17H13V10M4,10V17H7V10H4Z"></path></svg></div>
+                    <div style="color:#fff;font-size:17px;font-weight:700;" id="lbl-rates-title">معدل التحويل <svg width="16" height="16" viewBox="0 0 24 24" fill="#ffb74d" style="vertical-align:middle;"><path d="M11.5,1L2,6V8H21V6M16,10V17H19V10M2,22H21V19H2M10,10V17H13V10M4,10V17H7V10H4Z"></path></svg></div>
                     <!-- آخر تحديث مخفي — التحديث يعمل في الخلفية بصمت -->
                     <div style="display:none;">
                         <span id="lbl-rates-last-update"><span id="rates-last-update">--:--:--</span></span>
@@ -1129,10 +1129,10 @@
                     <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#ffb74d" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"></polyline></svg>
                 </button>
                 <div style="flex:1;text-align:right;direction:rtl;">
-                    <div style="color:#fff;font-size:17px;font-weight:700;" id="lbl-crypto-prices-title">أسعار العملات الرقمية <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#ff9800" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:middle;"><polyline points="22 7 13.5 15.5 8.5 10.5 2 17"></polyline><polyline points="16 7 22 7 22 13"></polyline></svg></div>
+                    <div style="color:#fff;font-size:17px;font-weight:700;" id="lbl-crypto-prices-title">أسعار العملات الرقمية <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#ffb74d" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:middle;"><polyline points="22 7 13.5 15.5 8.5 10.5 2 17"></polyline><polyline points="16 7 22 7 22 13"></polyline></svg></div>
                 </div>
                 <button type="button" id="toggle-prices-mode-btn" style="background:none;border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;width:34px;height:34px;flex-shrink:0;">
-                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#ff9800" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round">
+                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#ffb74d" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round">
                         <path d="M8 3 4 7l4 4"></path>
                         <path d="M4 7h16"></path>
                         <path d="m16 21 4-4-4-4"></path>
@@ -1876,12 +1876,12 @@
 
                 const pasteBtn = document.createElement('button');
                 pasteBtn.type = 'button';
-                pasteBtn.className = 'copy-reveal-btn';
+                pasteBtn.className = 'copy-reveal-btn is-paste';
                 pasteBtn.innerHTML = PASTE_ICON;
 
                 const copyBtn = document.createElement('button');
                 copyBtn.type = 'button';
-                copyBtn.className = 'copy-reveal-btn';
+                copyBtn.className = 'copy-reveal-btn is-copy';
                 copyBtn.innerHTML = COPY_ICON;
 
                 input.parentNode.insertBefore(wrap, input);
@@ -1938,10 +1938,17 @@
         function revealCopyButton(input) {
             const wrap = input.closest('.value-wrap');
             if (!wrap) return;
-            const btns = wrap.querySelectorAll('.copy-reveal-btn');
-            if (!btns.length) return;
+            const pasteBtn = wrap.querySelector('.is-paste');
+            const copyBtn = wrap.querySelector('.is-copy');
+            if (!pasteBtn || !copyBtn) return;
             collapseAllReveals();
-            btns.forEach(b => b.classList.add('show'));
+            const val = input.textContent;
+            const hasValue = val && val !== '0';
+            if (hasValue) {
+                copyBtn.classList.add('show');
+            } else {
+                pasteBtn.classList.add('show');
+            }
             copyModeActive = true;
         }
 
@@ -1979,15 +1986,11 @@
 
             input.addEventListener('touchstart', (e) => {
                 if (copyModeActive) {
-                    const val = input.textContent;
-                    if (val && val !== '0') revealCopyButton(input);
+                    revealCopyButton(input);
                     return;
                 }
                 copyPressTimer = setTimeout(() => {
-                    const val = input.textContent;
-                    if (val && val !== '0') {
-                        revealCopyButton(input);
-                    }
+                    revealCopyButton(input);
                 }, 500);
             }, { passive: true });
             input.addEventListener('touchend',  () => clearTimeout(copyPressTimer));
@@ -2308,7 +2311,7 @@
                             <div class="rate-card-code">1 ${base.code}</div>
                             <div class="rate-card-sub">${displayName}</div>
                         </div>
-                        ${isDetected ? `<span class="rate-card-badge">${translations[currentLang]?.myCurrencyBadge || 'عملتي'}</span>` : ''}
+                        ${isDetected ? `<span class="rate-card-badge"><svg width="18" height="18" viewBox="0 0 24 24" fill="#ff9800"><path d="M12,1L9,9L1,12L9,15L12,23L15,15L23,12L15,9L12,1Z"></path></svg></span>` : ''}
                     </div>
                     <div class="rate-card-body">${bodyHtml}</div>
                 `;
@@ -2733,10 +2736,10 @@
             }
 
             badge.innerHTML = `
-                <div style="display:flex;align-items:center;gap:6px;justify-content:center;background:#1c1c1c;border-radius:20px;padding:5px 12px;">
+                <div style="display:flex;align-items:center;gap:7px;justify-content:center;">
                     ${iconHtml}
-                    <span style="color:#fff;font-size:12px;font-weight:700;">${code}</span>
-                    <span style="color:${color};font-size:12px;font-weight:700;">${priceText}</span>
+                    <span style="color:#ffffff;font-size:15px;font-weight:800;">${code}</span>
+                    <span style="color:${color};font-size:15px;font-weight:800;">${priceText}</span>
                     ${arrowSvg}
                 </div>`;
         }
@@ -3924,7 +3927,7 @@
         }
 
         // ── تحديث عنوان شاشة أسعار العملات (رقمية/دولية) حسب اللغة والوضع الحالي ──
-        const PRICES_TITLE_ICON_SVG = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#ff9800" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:middle;"><polyline points="22 7 13.5 15.5 8.5 10.5 2 17"></polyline><polyline points="16 7 22 7 22 13"></polyline></svg>';
+        const PRICES_TITLE_ICON_SVG = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#ffb74d" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:middle;"><polyline points="22 7 13.5 15.5 8.5 10.5 2 17"></polyline><polyline points="16 7 22 7 22 13"></polyline></svg>';
         function updateCryptoPricesTitleText() {
             const titleEl = document.getElementById('lbl-crypto-prices-title');
             if (!titleEl) return;
@@ -3939,7 +3942,7 @@
         function _applyLang_settingsScreen(t) {
             const ratesTitleEl = document.getElementById('lbl-rates-title');
             if (ratesTitleEl) {
-                ratesTitleEl.innerHTML = `${t.ratesTitle} <svg width="16" height="16" viewBox="0 0 24 24" fill="#ff9800" style="vertical-align:middle;"><path d="M11.5,1L2,6V8H21V6M16,10V17H19V10M2,22H21V19H2M10,10V17H13V10M4,10V17H7V10H4Z"></path></svg>`;
+                ratesTitleEl.innerHTML = `${t.ratesTitle} <svg width="16" height="16" viewBox="0 0 24 24" fill="#ffb74d" style="vertical-align:middle;"><path d="M11.5,1L2,6V8H21V6M16,10V17H19V10M2,22H21V19H2M10,10V17H13V10M4,10V17H7V10H4Z"></path></svg>`;
             }
             const ratesBtnText = document.getElementById('rates-btn-text');
             if (ratesBtnText) ratesBtnText.textContent = t.ratesBtn;
