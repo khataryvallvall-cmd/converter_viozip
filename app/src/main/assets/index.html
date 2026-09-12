@@ -115,89 +115,15 @@
 
         .app-container {
             width: 100%;
-            max-width: clamp(280px, 90vw, 560px);
+            max-width: 450px;
             height: 100%;
             display: flex;
             flex-direction: column;
             background-color: #000000;
             position: relative; 
             overflow: hidden;
-            padding-left: env(safe-area-inset-left);
-            padding-right: env(safe-area-inset-right);
         }
 
-        .tablet-panel { display: none; }
-        .detail-pane { display: none; }
-
-        /* ═══════════════════════════════════════════════════════════════
-           نظام نقاط التوقف بمعيار Material Design 3
-           Compact 0-599 · Medium 600-904 · Expanded 905-1239 · Large 1240-1439 · Extra Large 1440+
-           القاعدة: لوحة جانبية تظهر بس لو العرض ≥905px *و* الارتفاع ≥500px معًا —
-           عشان نفرّق هاتف مايل بالعرض (عرض كبير/ارتفاع قصير) عن تابلت حقيقي.
-           ═══════════════════════════════════════════════════════════════ */
-
-        /* ── Medium (600-904): تابلت صغير عمودي — تكبير التطبيق نفسه، بدون لوحة جانبية بعد ── */
-        @media (min-width: 600px) {
-            .keypad-section button.key,
-            .currency-input { font-size: clamp(1em, 0.85em + 1vw, 1.15em); }
-        }
-
-        /* ── Expanded فما فوق (905px + ارتفاع كافٍ): الصفحة الرئيسية ثابتة دايمًا،
-           وأي قسم يفتح جنبها في لوحة بدل ما يغطيها ── */
-        @media (min-width: 905px) and (min-height: 500px) {
-            body { justify-content: center; gap: clamp(12px, 1.5vw, 28px); }
-            .app-container { max-width: clamp(420px, 46vw, 500px); }
-
-            .detail-pane .back-btn,
-            .detail-pane .settings-back-btn {
-                display: none !important;
-            }
-
-            .detail-pane {
-                display: block;
-                position: relative;
-                width: clamp(380px, 42vw, 620px);
-                height: 100%;
-                background-color: #000000;
-                border-radius: 20px;
-                overflow: hidden;
-            }
-            .detail-pane .sliding-screen {
-                position: absolute;
-                inset: 0;
-                width: 100%;
-                height: 100%;
-                transform: none !important;
-                transition: none !important;
-                display: none;
-            }
-            .detail-pane .sliding-screen.active {
-                display: flex;
-            }
-            .detail-pane-empty {
-                height: 100%;
-                display: flex;
-                align-items: center;
-                justify-content: center;
-                color: #555;
-                font-size: 13px;
-                text-align: center;
-                padding: 30px;
-                line-height: 1.8;
-            }
-        }
-
-        /* ── Large/Extra Large (1240px+): مساحة أوسع للوحة الجانبية ── */
-        @media (min-width: 1240px) and (min-height: 500px) {
-            .detail-pane { width: clamp(460px, 38vw, 680px); }
-        }
-
-        /* ── هاتف مايل بالعرض (عرض كبير، ارتفاع قصير) — يفضل تصميم "هاتف"، مش تابلت ── */
-        @media (min-width: 600px) and (max-height: 499px) {
-            .app-container { max-width: clamp(360px, 60vw, 460px); }
-            .keypad-section button.key,
-            .currency-input { font-size: clamp(0.9em, 0.8em + 0.6vw, 1em); }
-        }
 
         /* البنر داخل settings-body — له padding 20px */
         .settings-body > .ad-banner {
@@ -245,7 +171,7 @@
             display: flex;
             justify-content: space-between;
             align-items: center; 
-            padding: calc(15px + env(safe-area-inset-top)) 20px 5px 20px;
+            padding: 15px 20px 5px 20px;
         }
 
         .header-left {
@@ -259,14 +185,14 @@
 
         .app-title {
             color: #ffffff;
-            font-size: clamp(16px, 1.2vw + 12px, 22px);
+            font-size: 18px;
             font-weight: 600;
             white-space: nowrap;
         }
 
         .app-date {
             color: #00e676;
-            font-size: clamp(11px, 0.5vw + 9.5px, 14px);
+            font-size: 12px;
             font-weight: 700;
             direction: ltr; 
             text-align: left;
@@ -286,9 +212,9 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            width: 44px;
-            height: 44px;
-            min-width: 44px;
+            width: 38px;
+            height: 38px;
+            min-width: 38px;
             flex-shrink: 0;
             border: none;
             background: none;
@@ -436,7 +362,7 @@
             grid-template-columns: repeat(4, 1fr);
             grid-template-rows: repeat(5, 1fr);
             gap: 10px;
-            padding: 10px 15px calc(20px + env(safe-area-inset-bottom)) 15px;
+            padding: 10px 15px 20px 15px;
             background-color: #000000;
         }
 
@@ -525,8 +451,6 @@
             align-items: center;
             justify-content: center;
             flex-shrink: 0;
-            min-width: 44px;
-            min-height: 44px;
         }
 
         .categories-row {
@@ -812,8 +736,6 @@
             align-items: center;
             justify-content: center;
             flex-shrink: 0;
-            min-width: 44px;
-            min-height: 44px;
         }
 
         .lang-selector-container {
@@ -1826,7 +1748,7 @@
                         allRows[targetIndex].setAttribute('data-type', type);
                     }
 
-                    if (!window.matchMedia('(min-width: 905px) and (min-height: 500px)').matches) currencyScreen.classList.remove('active');
+                    currencyScreen.classList.remove('active');
                     searchInput.value = ''; 
                     filterList('');
                     // بعد تغيير العملة: أعد الحساب من القيمة الحالية في calcState
@@ -2090,11 +2012,7 @@
         });
 
         currenciesBackBtn.addEventListener('click', () => {
-            if (window.matchMedia('(min-width: 905px) and (min-height: 500px)').matches) {
-                if (typeof window.openDefaultCurrencyPicker === 'function') window.openDefaultCurrencyPicker();
-            } else {
-                currencyScreen.classList.remove('active');
-            }
+            currencyScreen.classList.remove('active');
             searchInput.value = '';
             filterList('');
         });
@@ -2148,14 +2066,9 @@
         });
 
         document.getElementById('rates-back-btn').addEventListener('click', () => {
+            ratesScreen.classList.remove('active');
             if (ratesAutoRefreshTimer) { clearInterval(ratesAutoRefreshTimer); ratesAutoRefreshTimer = null; }
             if (ratesClockTimer) { clearInterval(ratesClockTimer); ratesClockTimer = null; }
-            if (window.matchMedia('(min-width: 905px) and (min-height: 500px)').matches) {
-                ratesScreen.classList.remove('active');
-                if (typeof window.openDefaultCurrencyPicker === 'function') window.openDefaultCurrencyPicker();
-            } else {
-                ratesScreen.classList.remove('active');
-            }
             saveAppState();
         });
 
@@ -2241,13 +2154,8 @@
         });
 
         document.getElementById('crypto-prices-back-btn').addEventListener('click', () => {
+            cryptoPricesScreen.classList.remove('active');
             stopAllPricesTimers();
-            if (window.matchMedia('(min-width: 905px) and (min-height: 500px)').matches) {
-                cryptoPricesScreen.classList.remove('active');
-                if (typeof window.openDefaultCurrencyPicker === 'function') window.openDefaultCurrencyPicker();
-            } else {
-                cryptoPricesScreen.classList.remove('active');
-            }
             saveAppState();
         });
 
@@ -2326,8 +2234,8 @@
             return v.toFixed(Math.min(leading + 2, 8)).replace(/0+$/, '');
         }
 
-        function buildRatesScreen(targetId) {
-            const container = document.getElementById(targetId || 'rates-content');
+        function buildRatesScreen() {
+            const container = document.getElementById('rates-content');
             container.innerHTML = '';
 
             const hasLiveData = ratesCache && Object.keys(ratesCache).length > 5;
@@ -2436,9 +2344,7 @@
         const _measureCtx = _measureCanvas.getContext('2d');
 
         function adjustFontSize(element) {
-            // سقف الخط بيكبر مع عرض الشاشة (clamp 28px..44px عند 6vw) بدل سقف ثابت،
-            // فالأرقام تستفيد من المساحة الإضافية على الشاشات الكبيرة
-            const maxSize = Math.min(44, Math.max(28, window.innerWidth * 0.06));
+            const maxSize = 30;
             const minSize = 8;
             const padding = 24;
             const availableWidth = element.clientWidth - padding;
@@ -3045,8 +2951,8 @@
 
         // ── بناء بطاقات شاشة أسعار العملات الرقمية ──
         // ── بناء بطاقات "أسعار العملات الدولية" ──
-        function buildFiatPricesScreen(targetId) {
-            const container = document.getElementById(targetId || 'crypto-prices-content');
+        function buildFiatPricesScreen() {
+            const container = document.getElementById('crypto-prices-content');
             container.innerHTML = '';
 
             // نفس ترتيب شاشة اختيار العملة بالضبط: المكتشفة أولاً، ثم العملات الرئيسية، ثم الباقي أبجدياً
@@ -3130,8 +3036,8 @@
             });
         }
 
-        function buildCryptoPricesScreen(targetId) {
-            const container = document.getElementById(targetId || 'crypto-prices-content');
+        function buildCryptoPricesScreen() {
+            const container = document.getElementById('crypto-prices-content');
             container.innerHTML = '';
 
             // ترتيب حسب الترتيب السوقي (rank) إن وُجد، وإلا كما هو بترتيب القائمة
@@ -4404,116 +4310,13 @@
                 });
             }, { threshold: 0.3 });
 
-            // ── لوحة إضافية للشاشات الكبيرة (تابلت) — تظهر بجانب التطبيق فقط عبر media query، لا تؤثر على الموبايل ──
-            // ── لوحة تفاصيل دائمة للشاشات الكبيرة: الصفحة الرئيسية تفضل ظاهرة دايمًا،
-            //    وأي قسم (معدل تحويل / اختيار عملة / أسعار الكريبتو) بيفتح جنبها هنا، مش فوقها ──
-            function setupDetailPane() {
-                if (document.getElementById('detail-pane')) return;
-                const pane = document.createElement('div');
-                pane.className = 'detail-pane';
-                pane.id = 'detail-pane';
-                pane.innerHTML = '<div class="detail-pane-empty" id="detail-pane-empty">اختر قسمًا لعرضه هنا</div>';
-                const appEl = document.querySelector('.app-container');
-                if (appEl && appEl.parentNode) appEl.parentNode.insertBefore(pane, appEl.nextSibling);
+            function observeAdBanners() {
+                document.querySelectorAll('.ad-banner').forEach(el => adObserver.observe(el));
             }
-
-            function isLargeLayout() {
-                return window.matchMedia('(min-width: 905px) and (min-height: 500px)').matches;
-            }
-
-            // ينقل شاشة معينة لمكانها الصحيح حسب حجم الشاشة الحالي:
-            // في الشاشات الكبيرة → داخل detail-pane (بجانب الرئيسية)
-            // في الموبايل → مكانها الأصلي داخل app-container (فوق الرئيسية، زي ما كانت دايمًا)
-            function relocateScreen(screenEl) {
-                if (!screenEl) return;
-                const appEl = document.querySelector('.app-container');
-                const pane = document.getElementById('detail-pane');
-                if (isLargeLayout() && pane) {
-                    const emptyMsg = document.getElementById('detail-pane-empty');
-                    if (emptyMsg) emptyMsg.remove();
-                    if (screenEl.parentNode !== pane) pane.appendChild(screenEl);
-                } else if (appEl && screenEl.parentNode !== appEl) {
-                    appEl.appendChild(screenEl);
-                }
-            }
-
-            function relocateAllKnownScreens() {
-                ['currencies-screen', 'rates-screen', 'crypto-prices-screen'].forEach(id => {
-                    const el = document.getElementById(id);
-                    if (el) relocateScreen(el);
-                });
-                const pane = document.getElementById('detail-pane');
-                if (pane && !pane.querySelector('.sliding-screen.active') && !document.getElementById('detail-pane-empty')) {
-                    const msg = document.createElement('div');
-                    msg.className = 'detail-pane-empty';
-                    msg.id = 'detail-pane-empty';
-                    msg.textContent = 'اختر قسمًا لعرضه هنا';
-                    pane.appendChild(msg);
-                }
-            }
-
-            setupDetailPane();
-
-            // على الشاشات الكبيرة: القسم الافتراضي الظاهر في اللوحة الجانبية هو "أسعار العملات الدولية"
-            // اللحظية (نفس زرار open-crypto-prices-btn + toggle-prices-mode-btn بالظبط).
-            // قائمة اختيار العملة ما بتظهرش هنا افتراضيًا — بتظهر بس لو المستخدم دوس على
-            // شريط عملة في الصفحة الرئيسية (نفس السلوك الأصلي، بيستبدل محتوى اللوحة وقتها).
-            function openDefaultCurrencyPicker() {
-                if (!isLargeLayout()) return;
-                document.getElementById('open-crypto-prices-btn').click();
-                if (cryptoPricesMode !== 'fiat') {
-                    document.getElementById('toggle-prices-mode-btn').click();
-                }
-                relocateAllKnownScreens();
-            }
-            window.openDefaultCurrencyPicker = openDefaultCurrencyPicker;
-
-            // في اللوحة الجانبية: قسم واحد بس ظاهر في كل مرة — لما قسم جديد يتفعّل
-            // (معدل التحويل / الرقمية / اختيار العملة) لازم نطفّي البقية، بناءً على مين
-            // اتفعّل فعليًا الآن (مش بناءً على ترتيبه في الكود)
-            const KNOWN_SCREEN_IDS = ['currencies-screen', 'rates-screen', 'crypto-prices-screen'];
-            function enforceSingleActive(activatedId) {
-                if (!isLargeLayout()) return;
-                KNOWN_SCREEN_IDS.forEach(id => {
-                    if (id === activatedId) return;
-                    const el = document.getElementById(id);
-                    if (el && el.classList.contains('active')) el.classList.remove('active');
-                });
-            }
-            KNOWN_SCREEN_IDS.forEach(id => {
-                const el = document.getElementById(id);
-                if (!el) return;
-                new MutationObserver(() => {
-                    if (el.classList.contains('active')) {
-                        enforceSingleActive(id);
-                        relocateScreen(el);
-                    }
-                }).observe(el, { attributes: true, attributeFilter: ['class'] });
-            });
-
-            if (isLargeLayout()) openDefaultCurrencyPicker();
-            window.addEventListener('resize', () => {
-                if (isLargeLayout() && !document.querySelector('#detail-pane .sliding-screen.active')) {
-                    openDefaultCurrencyPicker();
-                }
-            });
-
-            // نعترض فتح كل شاشة رئيسية وننقلها لمكانها الصحيح أولاً، قبل ما تُفعَّل
-            ['currencies-screen', 'rates-screen', 'crypto-prices-screen'].forEach(id => {
-                const el = document.getElementById(id);
-                if (!el) return;
-                const obs = new MutationObserver(() => {
-                    if (el.classList.contains('active')) relocateScreen(el);
-                });
-                obs.observe(el, { attributes: true, attributeFilter: ['class'] });
-            });
-
-            relocateAllKnownScreens();
-            window.addEventListener('resize', relocateAllKnownScreens);
-            window.addEventListener('resize', () => {
-                document.querySelectorAll('.currency-input').forEach(el => adjustFontSize(el));
-            });
-
+            observeAdBanners();
+            // أي شرائط إعلانية تُضاف لاحقاً بشكل ديناميكي (كشاشة معدل التحويل) تُراقَب أيضاً
+            const bodyObserver = new MutationObserver(() => observeAdBanners());
+            bodyObserver.observe(document.body, { childList: true, subtree: true });
         })();
 
     
