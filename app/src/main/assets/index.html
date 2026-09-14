@@ -3133,7 +3133,7 @@
                                 ${rankHtml}
                                 <span style="color:#fff;font-size:14px;font-weight:700;">${c.code}</span>
                             </div>
-                            <div style="color:#9e9e9e;font-size:12px;">${c.name}</div>
+                            <div style="color:#9e9e9e;font-size:12px;">${currentLang === 'en' ? c.en : currentLang === 'fr' ? c.fr : c.name}</div>
                         </div>
                         <div style="text-align:left;">
                             ${priceHtml}
