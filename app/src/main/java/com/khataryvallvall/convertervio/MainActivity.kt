@@ -7,6 +7,7 @@ import android.os.Bundle
 import android.view.ViewGroup
 import android.webkit.JavascriptInterface
 import android.webkit.WebChromeClient
+import android.webkit.WebResourceRequest
 import android.webkit.WebView
 import android.webkit.WebViewClient
 import androidx.appcompat.app.AppCompatActivity
@@ -15,6 +16,7 @@ import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 class MainActivity : AppCompatActivity() {
 
     private lateinit var webView: WebView
+    private val ALLOWED_URL = "file:///android_asset/index.html"
 
     // جسر بسيط بين الويب والنظام: بيسمح لكود JavaScript يقرأ/يكتب في حافظة أندرويد الحقيقية
     inner class ClipboardBridge(private val context: Context) {
@@ -35,10 +37,22 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
+    // يمنع أي محاولة تنقّل داخل الـWebView لأي صفحة غير صفحتنا المحلية —
+    // حتى لو حصل أي خلل مستقبلي (زي كود إعلان فيه رابط)، الصفحة الخارجية
+    // مش هتقدر توصل لأي حاجة، لأنها أصلاً مش هتتحمّل جوه التطبيق
+    inner class LockedWebViewClient : WebViewClient() {
+        override fun shouldOverrideUrlLoading(view: WebView, request: WebResourceRequest): Boolean {
+            return request.url.toString() != ALLOWED_URL
+        }
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         // شاشة بداية سودا صافية بدون أيقونة أو اسم — بتختفي فورًا
         installSplashScreen()
         super.onCreate(savedInstanceState)
+
+        // إغلاق صريح لأدوات فحص/تنقيح WebView عن بُعد في نسخة الإصدار النهائي
+        WebView.setWebContentsDebuggingEnabled(false)
 
         webView = WebView(this)
         webView.layoutParams = ViewGroup.LayoutParams(
@@ -52,14 +66,17 @@ class MainActivity : AppCompatActivity() {
         settings.domStorageEnabled = true
         settings.databaseEnabled = true
         settings.cacheMode = android.webkit.WebSettings.LOAD_DEFAULT
-        settings.allowFileAccess = true
+        settings.allowFileAccess = false
+        settings.allowContentAccess = false
+        settings.allowFileAccessFromFileURLs = false
+        settings.allowUniversalAccessFromFileURLs = false
         settings.mediaPlaybackRequiresUserGesture = false
 
-        webView.webViewClient = WebViewClient()
+        webView.webViewClient = LockedWebViewClient()
         webView.webChromeClient = WebChromeClient()
         webView.addJavascriptInterface(ClipboardBridge(this), "AndroidClipboard")
 
-        webView.loadUrl("file:///android_asset/index.html")
+        webView.loadUrl(ALLOWED_URL)
     }
 
     override fun onBackPressed() {
