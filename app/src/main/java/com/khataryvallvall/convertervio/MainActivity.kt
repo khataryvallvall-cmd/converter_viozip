@@ -1,8 +1,11 @@
 package com.khataryvallvall.convertervio
 
+import android.Manifest
 import android.content.ClipData
 import android.content.ClipboardManager
 import android.content.Context
+import android.content.pm.PackageManager
+import android.os.Build
 import android.os.Bundle
 import android.view.ViewGroup
 import android.webkit.JavascriptInterface
@@ -10,15 +13,81 @@ import android.webkit.WebChromeClient
 import android.webkit.WebResourceRequest
 import android.webkit.WebView
 import android.webkit.WebViewClient
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.content.ContextCompat
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
+import androidx.work.ExistingPeriodicWorkPolicy
+import androidx.work.PeriodicWorkRequestBuilder
+import androidx.work.WorkManager
+import java.util.concurrent.TimeUnit
 
 class MainActivity : AppCompatActivity() {
 
     private lateinit var webView: WebView
     private val ALLOWED_URL = "file:///android_asset/index.html"
 
-    // جسر بسيط بين الويب والنظام: بيسمح لكود JavaScript يقرأ/يكتب في حافظة أندرويد الحقيقية
+    // طلب صلاحية الإشعارات وقت التشغيل (مطلوب فقط من أندرويد 13 فما فوق)
+    private val notificationPermissionLauncher = registerForActivityResult(
+        ActivityResultContracts.RequestPermission()
+    ) { granted ->
+        if (granted) {
+            NotificationHelper.scheduleDailyReminder(this)
+        }
+    }
+
+    private fun setupDailyReminder() {
+        NotificationHelper.createNotificationChannel(this)
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            val granted = ContextCompat.checkSelfPermission(
+                this,
+                Manifest.permission.POST_NOTIFICATIONS
+            ) == PackageManager.PERMISSION_GRANTED
+
+            if (granted) {
+                NotificationHelper.scheduleDailyReminder(this)
+            } else {
+                notificationPermissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
+            }
+        } else {
+            // ما قبل أندرويد 13 ما فيه صلاحية وقت تشغيل مطلوبة للإشعارات
+            NotificationHelper.scheduleDailyReminder(this)
+        }
+    }
+
+    // جسر يسمح لصفحة الويب بإخبار الجهة الأصلية بالعملة الرقمية المفضّلة الحالية
+    // (يُقرأ من شارة العملة الحية في الصفحة الرئيسية) لمراقبتها في الخلفية
+    inner class PriceAlertBridge(private val context: Context) {
+        @JavascriptInterface
+        fun setFavoriteSymbol(symbol: String) {
+            val prefs = context.getSharedPreferences(
+                PriceAlertWorker.PREFS_NAME,
+                Context.MODE_PRIVATE
+            )
+            prefs.edit().putString(PriceAlertWorker.KEY_FAVORITE_SYMBOL, symbol).apply()
+        }
+    }
+
+    // جسر يسمح لصفحة الويب بإخبار الجهة الأصلية باللغة الحالية (ar/en/fr)
+    // لبناء نصوص الإشعارات بنفس لغة المستخدم داخل التطبيق
+    inner class LocaleBridge(private val context: Context) {
+        @JavascriptInterface
+        fun setLanguage(lang: String) {
+            LocaleHelper.setLanguage(context, lang)
+        }
+    }
+
+    private fun schedulePriceAlerts() {
+        // فحص كل 3 ساعات: كافٍ لرصد الحركات الحادة دون استنزاف البطارية أو الإزعاج
+        val request = PeriodicWorkRequestBuilder<PriceAlertWorker>(3, TimeUnit.HOURS).build()
+        WorkManager.getInstance(this).enqueueUniquePeriodicWork(
+            "price_alert_worker",
+            ExistingPeriodicWorkPolicy.KEEP,
+            request
+        )
+    }
+
     inner class ClipboardBridge(private val context: Context) {
         @JavascriptInterface
         fun getClipboardText(): String {
@@ -75,8 +144,13 @@ class MainActivity : AppCompatActivity() {
         webView.webViewClient = LockedWebViewClient()
         webView.webChromeClient = WebChromeClient()
         webView.addJavascriptInterface(ClipboardBridge(this), "AndroidClipboard")
+        webView.addJavascriptInterface(PriceAlertBridge(this), "AndroidPriceAlerts")
+        webView.addJavascriptInterface(LocaleBridge(this), "AndroidLocale")
 
         webView.loadUrl(ALLOWED_URL)
+
+        setupDailyReminder()
+        schedulePriceAlerts()
     }
 
     override fun onBackPressed() {
