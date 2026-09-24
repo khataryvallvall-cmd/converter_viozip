@@ -4,7 +4,9 @@ import android.Manifest
 import android.content.ClipData
 import android.content.ClipboardManager
 import android.content.Context
+import android.content.Intent
 import android.content.pm.PackageManager
+import android.net.Uri
 import android.os.Build
 import android.os.Bundle
 import android.view.ViewGroup
@@ -66,6 +68,29 @@ class MainActivity : AppCompatActivity() {
                 Context.MODE_PRIVATE
             )
             prefs.edit().putString(PriceAlertWorker.KEY_FAVORITE_SYMBOL, symbol).apply()
+        }
+    }
+
+    // جسر يفتح صفحة تحديث متصفح Chrome في متجر Play بأمان، متجاوزًا قفل
+    // الـWebView الذي يمنع أي تنقّل خارجي (موجود أصلاً لحماية التطبيق)
+    inner class SystemActionsBridge(private val context: Context) {
+        @JavascriptInterface
+        fun openChromeUpdatePage() {
+            try {
+                val intent = Intent(Intent.ACTION_VIEW, Uri.parse("market://details?id=com.android.chrome"))
+                intent.setPackage("com.android.vending")
+                context.startActivity(intent)
+            } catch (e: Exception) {
+                try {
+                    val fallback = Intent(
+                        Intent.ACTION_VIEW,
+                        Uri.parse("https://play.google.com/store/apps/details?id=com.android.chrome")
+                    )
+                    context.startActivity(fallback)
+                } catch (e2: Exception) {
+                    // لا متجر متاح على الجهاز — لا يوجد إجراء بديل ممكن
+                }
+            }
         }
     }
 
@@ -146,6 +171,7 @@ class MainActivity : AppCompatActivity() {
         webView.addJavascriptInterface(ClipboardBridge(this), "AndroidClipboard")
         webView.addJavascriptInterface(PriceAlertBridge(this), "AndroidPriceAlerts")
         webView.addJavascriptInterface(LocaleBridge(this), "AndroidLocale")
+        webView.addJavascriptInterface(SystemActionsBridge(this), "AndroidSystem")
 
         webView.loadUrl(ALLOWED_URL)
 
