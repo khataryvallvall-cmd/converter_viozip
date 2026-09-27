@@ -19,10 +19,6 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
-import androidx.work.ExistingPeriodicWorkPolicy
-import androidx.work.PeriodicWorkRequestBuilder
-import androidx.work.WorkManager
-import java.util.concurrent.TimeUnit
 
 class MainActivity : AppCompatActivity() {
 
@@ -58,19 +54,6 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    // جسر يسمح لصفحة الويب بإخبار الجهة الأصلية بالعملة الرقمية المفضّلة الحالية
-    // (يُقرأ من شارة العملة الحية في الصفحة الرئيسية) لمراقبتها في الخلفية
-    inner class PriceAlertBridge(private val context: Context) {
-        @JavascriptInterface
-        fun setFavoriteSymbol(symbol: String) {
-            val prefs = context.getSharedPreferences(
-                PriceAlertWorker.PREFS_NAME,
-                Context.MODE_PRIVATE
-            )
-            prefs.edit().putString(PriceAlertWorker.KEY_FAVORITE_SYMBOL, symbol).apply()
-        }
-    }
-
     // جسر يفتح صفحة تحديث متصفح Chrome في متجر Play بأمان، متجاوزًا قفل
     // الـWebView الذي يمنع أي تنقّل خارجي (موجود أصلاً لحماية التطبيق)
     inner class SystemActionsBridge(private val context: Context) {
@@ -101,16 +84,6 @@ class MainActivity : AppCompatActivity() {
         fun setLanguage(lang: String) {
             LocaleHelper.setLanguage(context, lang)
         }
-    }
-
-    private fun schedulePriceAlerts() {
-        // فحص كل 3 ساعات: كافٍ لرصد الحركات الحادة دون استنزاف البطارية أو الإزعاج
-        val request = PeriodicWorkRequestBuilder<PriceAlertWorker>(3, TimeUnit.HOURS).build()
-        WorkManager.getInstance(this).enqueueUniquePeriodicWork(
-            "price_alert_worker",
-            ExistingPeriodicWorkPolicy.KEEP,
-            request
-        )
     }
 
     inner class ClipboardBridge(private val context: Context) {
@@ -169,14 +142,12 @@ class MainActivity : AppCompatActivity() {
         webView.webViewClient = LockedWebViewClient()
         webView.webChromeClient = WebChromeClient()
         webView.addJavascriptInterface(ClipboardBridge(this), "AndroidClipboard")
-        webView.addJavascriptInterface(PriceAlertBridge(this), "AndroidPriceAlerts")
         webView.addJavascriptInterface(LocaleBridge(this), "AndroidLocale")
         webView.addJavascriptInterface(SystemActionsBridge(this), "AndroidSystem")
 
         webView.loadUrl(ALLOWED_URL)
 
         setupDailyReminder()
-        schedulePriceAlerts()
     }
 
     override fun onBackPressed() {

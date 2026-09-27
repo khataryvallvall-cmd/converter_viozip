@@ -1,24 +1,18 @@
 package com.khataryvallvall.convertervio
 
-import android.Manifest
 import android.app.AlarmManager
 import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.app.PendingIntent
 import android.content.Context
 import android.content.Intent
-import android.content.pm.PackageManager
 import android.os.Build
-import androidx.core.app.ActivityCompat
-import androidx.core.app.NotificationCompat
-import androidx.core.app.NotificationManagerCompat
 import java.util.Calendar
 
 // كل ما يخص جدولة التذكير اليومي وإنشاء قناة الإشعارات، في مكان واحد
 object NotificationHelper {
 
     const val CHANNEL_ID = "daily_reminder_channel"
-    const val PRICE_ALERT_CHANNEL_ID = "price_alert_channel"
     private const val REQUEST_CODE = 1001
 
     // الوقت الافتراضي للتذكير اليومي — الساعة 6:00 مساءً بالتوقيت المحلي للجهاز
@@ -38,48 +32,7 @@ object NotificationHelper {
                 description = "تذكير يومي بسيط لفتح تطبيق Converter Vio"
             }
             manager.createNotificationChannel(dailyChannel)
-
-            val priceChannel = NotificationChannel(
-                PRICE_ALERT_CHANNEL_ID,
-                "تنبيهات الأسعار",
-                NotificationManager.IMPORTANCE_DEFAULT
-            ).apply {
-                description = "تنبيهات عند حدوث تغيّر حاد في أسعار العملات الرقمية"
-            }
-            manager.createNotificationChannel(priceChannel)
         }
-    }
-
-    // يُستدعى من العامل الخلفي (PriceAlertWorker) عند رصد تغيّر يستحق تنبيهًا
-    fun showPriceAlert(context: Context, notificationId: Int, title: String, text: String) {
-        if (ActivityCompat.checkSelfPermission(
-                context,
-                Manifest.permission.POST_NOTIFICATIONS
-            ) != PackageManager.PERMISSION_GRANTED
-        ) {
-            return
-        }
-
-        val openAppIntent = Intent(context, MainActivity::class.java).apply {
-            flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP
-        }
-        val contentPendingIntent = PendingIntent.getActivity(
-            context,
-            notificationId,
-            openAppIntent,
-            PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
-        )
-
-        val notification = NotificationCompat.Builder(context, PRICE_ALERT_CHANNEL_ID)
-            .setSmallIcon(R.drawable.ic_notification)
-            .setContentTitle(title)
-            .setContentText(text)
-            .setPriority(NotificationCompat.PRIORITY_DEFAULT)
-            .setAutoCancel(true)
-            .setContentIntent(contentPendingIntent)
-            .build()
-
-        NotificationManagerCompat.from(context).notify(notificationId, notification)
     }
 
     fun scheduleDailyReminder(context: Context) {
