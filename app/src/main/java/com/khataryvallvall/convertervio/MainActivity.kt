@@ -22,6 +22,16 @@ import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 
 class MainActivity : AppCompatActivity() {
 
+    // يقفل حجم الخط على القيمة الطبيعية دائماً (1.0)، بغض النظر عن إعداد
+    // "حجم الخط" الذي يختاره المستخدم في نظام أندرويد — يجعل التطبيق مستقلاً
+    // تماماً عن إعدادات النظام في هذه النقطة، كما طُلب
+    override fun attachBaseContext(newBase: Context) {
+        val config = android.content.res.Configuration(newBase.resources.configuration)
+        config.fontScale = 1.0f
+        val context = newBase.createConfigurationContext(config)
+        super.attachBaseContext(context)
+    }
+
     private lateinit var webView: WebView
     private val ALLOWED_URL = "file:///android_asset/index.html"
 
@@ -138,6 +148,9 @@ class MainActivity : AppCompatActivity() {
         settings.allowFileAccessFromFileURLs = false
         settings.allowUniversalAccessFromFileURLs = false
         settings.mediaPlaybackRequiresUserGesture = false
+        // يمنع خط التطبيق من التأثر بإعداد "حجم الخط" في نظام أندرويد — يبقى
+        // التطبيق بنفس المقاسات المصمَّمة له دائماً، بغض النظر عن إعدادات الهاتف
+        settings.textZoom = 100
 
         webView.webViewClient = LockedWebViewClient()
         webView.webChromeClient = WebChromeClient()
