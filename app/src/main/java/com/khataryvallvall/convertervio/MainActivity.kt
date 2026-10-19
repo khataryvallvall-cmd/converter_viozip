@@ -9,15 +9,21 @@ import android.content.pm.PackageManager
 import android.net.Uri
 import android.os.Build
 import android.os.Bundle
+import android.graphics.Color
 import android.view.ViewGroup
+import android.widget.FrameLayout
 import android.webkit.JavascriptInterface
 import android.webkit.WebChromeClient
 import android.webkit.WebResourceRequest
 import android.webkit.WebView
 import android.webkit.WebViewClient
+import androidx.activity.OnBackPressedCallback
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
+import androidx.core.view.ViewCompat
+import androidx.core.view.WindowCompat
+import androidx.core.view.WindowInsetsCompat
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 
 class MainActivity : AppCompatActivity() {
@@ -132,11 +138,46 @@ class MainActivity : AppCompatActivity() {
         WebView.setWebContentsDebuggingEnabled(false)
 
         webView = WebView(this)
-        webView.layoutParams = ViewGroup.LayoutParams(
+        webView.layoutParams = FrameLayout.LayoutParams(
             ViewGroup.LayoutParams.MATCH_PARENT,
             ViewGroup.LayoutParams.MATCH_PARENT
         )
-        setContentView(webView)
+
+        // أندرويد 15 فما فوق يرسم التطبيقات بملء الشاشة (edge-to-edge) إجبارياً عند
+        // targetSdk 35+. نضع الـWebView داخل حاوية سوداء ونضيف لها هوامش بقدر شريط
+        // الحالة وشريط التنقل والنتوء ولوحة المفاتيح، فلا يختفي أي جزء من الواجهة تحتها.
+        val container = FrameLayout(this)
+        container.setBackgroundColor(Color.BLACK)
+        container.addView(webView)
+        setContentView(container)
+
+        WindowCompat.setDecorFitsSystemWindows(window, false)
+        WindowCompat.getInsetsController(window, container).apply {
+            isAppearanceLightStatusBars = false
+            isAppearanceLightNavigationBars = false
+        }
+        ViewCompat.setOnApplyWindowInsetsListener(container) { v, insets ->
+            val bars = insets.getInsets(
+                WindowInsetsCompat.Type.systemBars() or
+                    WindowInsetsCompat.Type.displayCutout() or
+                    WindowInsetsCompat.Type.ime()
+            )
+            v.setPadding(bars.left, bars.top, bars.right, bars.bottom)
+            WindowInsetsCompat.CONSUMED
+        }
+
+        // زر/إيماءة الرجوع بالطريقة الحديثة (onBackPressed لا تُستدعى عند targetSdk 36
+        // على أندرويد 16 فما فوق)
+        onBackPressedDispatcher.addCallback(this, object : OnBackPressedCallback(true) {
+            override fun handleOnBackPressed() {
+                if (webView.canGoBack()) {
+                    webView.goBack()
+                } else {
+                    isEnabled = false
+                    onBackPressedDispatcher.onBackPressed()
+                }
+            }
+        })
 
         val settings = webView.settings
         settings.javaScriptEnabled = true
@@ -163,11 +204,4 @@ class MainActivity : AppCompatActivity() {
         setupDailyReminder()
     }
 
-    override fun onBackPressed() {
-        if (webView.canGoBack()) {
-            webView.goBack()
-        } else {
-            super.onBackPressed()
-        }
-    }
 }

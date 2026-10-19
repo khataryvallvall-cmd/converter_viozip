@@ -4,6 +4,22 @@
     <meta charset="UTF-8">
 <script>
 (function(){
+  // سدّ نقص واجهات حديثة في WebView القديم (AbortSignal.timeout تتطلب WebView 103+، وAbortController تتطلب 66+)
+  try{
+    var nativeAbort=(typeof window.AbortController==='function');
+    if(!nativeAbort){
+      var FakeSignal=function(){this.aborted=false;};
+      FakeSignal.prototype.addEventListener=function(){};FakeSignal.prototype.removeEventListener=function(){};
+      window.AbortController=function(){this.signal=new FakeSignal();};
+      window.AbortController.prototype.abort=function(){this.signal.aborted=true;};
+    }
+    if(typeof window.AbortSignal!=='function'&&typeof window.AbortSignal!=='object'){window.AbortSignal={};}
+    if(typeof window.AbortSignal.timeout!=='function'){
+      window.AbortSignal.timeout=function(ms){if(!nativeAbort)return undefined;var c=new window.AbortController();setTimeout(function(){try{c.abort();}catch(e){}},ms);return c.signal;};
+    }
+  }catch(e){}
+})();
+(function(){
   var modern=false;
   try{ new Function('var o={a:1};return (o?.a)??0;'); modern=(typeof fetch==='function'&&typeof Promise==='function'); }catch(e){}
   window.__legacy=!modern;
@@ -1101,7 +1117,50 @@ if(!e||"file"!==e.scheme){h=Zt;continue}switch(o){case gt:l.host=e.host,l.path=d
             .currency-row:nth-child(3), .currency-row:nth-child(4) { display: flex !important; }
             .btn { font-size: 1.5rem; }
         }
-    </style>
+    
+/* ===================== الحاسبة المدمجة ===================== */
+#calc-screen { direction: ltr; }
+#calc-screen .c-head { flex: 0 0 auto; display: flex; align-items: center; justify-content: space-between; gap: 0.5rem; padding: calc(0.9375rem + env(safe-area-inset-top)) 1.25rem 0.3125rem 1.25rem; }
+#calc-screen .c-back { cursor: pointer; padding: 0.3125rem; display: flex; align-items: center; justify-content: center; flex-shrink: 0; min-width: 2.75rem; min-height: 2.75rem; border: none; background: none; }
+#calc-screen .c-back:active { opacity: 0.6; }
+#calc-screen .c-note { flex: 1; min-width: 0; height: 2.75rem; display: flex; align-items: center; justify-content: flex-end; padding: 0 0.25rem; color: #ffffff; font-size: 1.1875rem; font-weight: 400; font-family: Georgia, 'Times New Roman', serif; white-space: nowrap; opacity: 0; transition: opacity 0.2s ease; pointer-events: none; }
+#calc-screen .c-note.ar { direction: rtl; font-family: 'Noto Naskh Arabic', 'Amiri', serif; font-size: 1.25rem; }
+#calc-screen .c-note.show { opacity: 1; }
+#calc-screen .c-display-section { flex: 1; min-height: 0; display: flex; flex-direction: column; justify-content: flex-end; gap: 0.375rem; padding: 0.625rem 1.5rem 0.875rem 1.5rem; direction: ltr; }
+#calc-screen .c-sec { min-height: 1.75rem; color: #8a8a8a; font-size: 1.375rem; font-weight: 600; line-height: 1.3; text-align: right; white-space: nowrap; overflow: hidden; padding: 0.25em 0; margin: -0.25em 0; font-family: sans-serif; }
+#calc-screen .c-sec:empty { display: none; }
+#calc-screen .c-wrap { height: 5.75rem; display: flex; align-items: flex-end; overflow: hidden; background: #000000; transform: translateZ(0); -webkit-backface-visibility: hidden; backface-visibility: hidden; }
+#calc-screen .c-main { color: #ffffff; font-size: 4rem; font-weight: 700; line-height: 1.15; white-space: nowrap; overflow: hidden; display: flex; justify-content: flex-end; width: 100%; min-width: 0; padding: 0.1em 0; margin: 0; font-family: sans-serif; }
+#calc-screen .c-num { display: block; flex: none; transform-origin: right bottom; }
+#calc-screen .c-fade { animation: cFade 0.12s ease-out both; }
+@keyframes cFade { from { opacity: 0.7; } to { opacity: 1; } }
+#calc-screen .c-units { display: block; min-height: 1.875rem; color: #ffffff; font-size: 1.625rem; font-weight: 400; line-height: 1.3; text-align: right; white-space: nowrap; direction: ltr; font-family: Georgia, 'Times New Roman', serif; }
+#calc-screen .c-units.ar { direction: rtl; font-family: 'Noto Naskh Arabic', 'Amiri', serif; font-size: 1.6875rem; }
+#calc-screen .sep { display: inline-block; width: 0.19em; height: 0.31em; margin: 0 0.035em 0 0.015em; vertical-align: -0.14em; fill: currentColor; stroke: none; overflow: visible; }
+#calc-screen .op { display: inline-block; width: 0.5em; height: 0.5em; vertical-align: 0.1em; margin: 0 0.04em; fill: none; stroke: currentColor; stroke-width: 3; stroke-linecap: round; stroke-linejoin: round; overflow: visible; }
+#calc-screen .op .dot { fill: currentColor; stroke: none; }
+#calc-screen .c-copy { flex: none; align-self: flex-end; width: 2.875rem; height: 2.875rem; margin: 0 0 1.5625rem 0; padding: 0; border: none; border-radius: 50%; background: #3a3a3c; color: #ffffff; display: flex; align-items: center; justify-content: center; cursor: pointer; opacity: 0; animation: cCopyIn 0.16s ease-out forwards; }
+#calc-screen .c-copy svg { width: 56%; height: 56%; pointer-events: none; }
+@keyframes cCopyIn { from { opacity: 0; } to { opacity: 1; } }
+#calc-screen .c-keypad { flex: 0 0 55%; display: grid; grid-template-columns: repeat(4, 1fr); grid-template-rows: repeat(5, 1fr); gap: 0.625rem; padding: 0.625rem 0.9375rem calc(1.25rem + env(safe-area-inset-bottom)) 0.9375rem; background-color: #000000; }
+@media (max-width: 767px) and (min-height: 800px) { #calc-screen .c-keypad { gap: 0.75rem; padding: 0.625rem 1rem 1.25rem; } }
+@media (max-width: 767px) and (min-height: 900px) { #calc-screen .c-keypad { gap: 0.875rem; padding: 0.75rem 1rem 1.75rem; } }
+#calc-screen .cb { border: none; border-radius: 3.125rem; display: flex; justify-content: center; align-items: center; cursor: pointer; width: 100%; height: 100%; transition: transform 0.1s ease, background-color 0.1s ease; font-family: sans-serif; }
+#calc-screen .cb:active { opacity: 0.9; transform: scale(0.96); }
+#calc-screen .cb-dark { background-color: #353535; color: #ffffff; font-size: 1.875rem; font-weight: 600; }
+#calc-screen .cb-light { background-color: #9e9e9e; color: #000000; font-size: 1.75rem; font-weight: 700; }
+#calc-screen .cb-orange { background-color: #ff9800; color: #ffffff; font-size: 2.375rem; font-weight: 500; }
+#calc-screen .cb-zero { grid-column: span 2; }
+@media (hover: hover) { #calc-screen .cb:hover { filter: brightness(1.12); } #calc-screen .c-copy:hover { filter: brightness(1.15); } }
+@media (min-aspect-ratio: 5/4) and (min-width: 560px) {
+  #calc-screen { display: grid; grid-template-columns: 1fr 1fr; grid-template-rows: auto 1fr; grid-template-areas: "head head" "disp pad"; }
+  #calc-screen .c-head { grid-area: head; }
+  #calc-screen .c-display-section { grid-area: disp; min-width: 0; }
+  #calc-screen .c-keypad { grid-area: pad; min-width: 0; min-height: 0; flex: none; }
+}
+@media (prefers-reduced-motion: reduce) { #calc-screen .c-fade, #calc-screen .c-copy { animation: none; } #calc-screen .c-copy { opacity: 1; } }
+.live-stats-btn.calc-btn { margin-inline-end: 0; }
+</style>
     
     
 
@@ -1120,6 +1179,11 @@ if(!e||"file"!==e.scheme){h=Zt;continue}switch(o){case gt:l.host=e.host,l.path=d
             <div id="greeting-badge" style="flex:1;"></div>
             
             <div class="header-right">
+                <button type="button" class="live-stats-btn calc-btn" id="open-calc-btn" aria-label="Calculator">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="#ffb74d">
+                        <path d="M19 3H5C3.9 3 3 3.9 3 5V19C3 20.1 3.9 21 5 21H19C20.1 21 21 20.1 21 19V5C21 3.9 20.1 3 19 3M13 7.1L14.1 6L15.5 7.4L16.9 6L18 7.1L16.6 8.5L18 9.9L16.9 11L15.5 9.6L14.1 11L13 9.9L14.4 8.5L13 7.1M6.2 7.7H11.2V9.2H6.2V7.7M11.5 16H9.5V18H8V16H6V14.5H8V12.5H9.5V14.5H11.5V16M18 17.2H13V15.7H18V17.2M18 14.8H13V13.3H18V14.8Z"></path>
+                    </svg>
+                </button>
                 <button type="button" class="live-stats-btn" id="open-rates-btn">
                     <svg width="24" height="24" viewBox="0 0 24 24" fill="#ffb74d">
                         <path d="M11.5,1L2,6V8H21V6M16,10V17H19V10M2,22H21V19H2M10,10V17H13V10M4,10V17H7V10H4Z"></path>
@@ -1284,6 +1348,82 @@ if(!e||"file"!==e.scheme){h=Zt;continue}switch(o){case gt:l.host=e.host,l.path=d
             <div id="rates-content" style="flex:1;overflow-y:auto;overscroll-behavior:contain;padding:0 16px 20px 16px;display:flex;flex-direction:column;gap:12px;direction:rtl;"></div>
         </div>
 
+        
+        <div id="calc-screen" class="sliding-screen" aria-label="Calculator">
+            <div class="c-head">
+                <button type="button" class="c-back" id="calc-back-btn" aria-label="Back">
+                    <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#ffb74d" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"></polyline></svg>
+                </button>
+                <div class="c-note" id="c-note" role="status" aria-live="polite"></div>
+            </div>
+            <main class="c-display-section">
+                <div class="c-sec" id="c-sec"></div>
+                <div class="c-wrap" id="c-wrap"><div class="c-main" id="c-main">0</div></div>
+                <div class="c-units" id="c-units"></div>
+            </main>
+            <section class="c-keypad" id="c-keypad">
+            <button class="cb cb-light" data-caction="clear">C</button>
+            <button class="cb cb-light" data-caction="backspace">
+                <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" style="pointer-events:none;">
+                    <line x1="19" y1="12" x2="5" y2="12"></line>
+                    <polyline points="12 19 5 12 12 5"></polyline>
+                </svg>
+            </button>
+            <button class="cb cb-light" data-caction="percent">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" style="pointer-events:none;">
+                    <line x1="19" y1="5" x2="5" y2="19"></line>
+                    <circle cx="6.5" cy="6.5" r="2" fill="currentColor" stroke="none"></circle>
+                    <circle cx="17.5" cy="17.5" r="2" fill="currentColor" stroke="none"></circle>
+                </svg>
+            </button>
+            <button class="cb cb-orange" data-caction="operator" data-cop="divide">
+                <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" style="pointer-events:none;">
+                    <circle cx="12" cy="5.5" r="1.8" fill="currentColor" stroke="none"></circle>
+                    <line x1="5" y1="12" x2="19" y2="12"></line>
+                    <circle cx="12" cy="18.5" r="1.8" fill="currentColor" stroke="none"></circle>
+                </svg>
+            </button>
+
+            <button class="cb cb-dark" data-caction="number">7</button>
+            <button class="cb cb-dark" data-caction="number">8</button>
+            <button class="cb cb-dark" data-caction="number">9</button>
+            <button class="cb cb-orange" data-caction="operator" data-cop="multiply">
+                <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" style="pointer-events:none;">
+                    <line x1="18" y1="6" x2="6" y2="18"></line>
+                    <line x1="6" y1="6" x2="18" y2="18"></line>
+                </svg>
+            </button>
+
+            <button class="cb cb-dark" data-caction="number">4</button>
+            <button class="cb cb-dark" data-caction="number">5</button>
+            <button class="cb cb-dark" data-caction="number">6</button>
+            <button class="cb cb-orange" data-caction="operator" data-cop="subtract">
+                <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" style="pointer-events:none;">
+                    <line x1="5" y1="12" x2="19" y2="12"></line>
+                </svg>
+            </button>
+
+            <button class="cb cb-dark" data-caction="number">1</button>
+            <button class="cb cb-dark" data-caction="number">2</button>
+            <button class="cb cb-dark" data-caction="number">3</button>
+            <button class="cb cb-orange" data-caction="operator" data-cop="add">
+                <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" style="pointer-events:none;">
+                    <line x1="12" y1="5" x2="12" y2="19"></line>
+                    <line x1="5" y1="12" x2="19" y2="12"></line>
+                </svg>
+            </button>
+
+            <button class="cb cb-dark cb-zero" data-caction="number">0</button>
+            <button class="cb cb-dark" data-caction="dot">.</button>
+            <button class="cb cb-orange" data-caction="calculate">
+                <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" style="pointer-events:none;">
+                    <line x1="5" y1="9" x2="19" y2="9"></line>
+                    <line x1="5" y1="15" x2="19" y2="15"></line>
+                </svg>
+            </button>
+        </section>
+        </div>
+
         <div id="settings-screen" class="sliding-screen" style="display:none;"></div>
 
     </div>
@@ -1344,5 +1484,595 @@ if(!e||"file"!==e.scheme){h=Zt;continue}switch(o){case gt:l.host=e.host,l.path=d
   document.addEventListener('DOMContentLoaded',function(){fix();refitAll();});fix();
 })();
 </script><script type="text/plain" id="vl4">(function(){var SEP="<i class=\"tcomma\">,</i><svg class=\"sep\" viewBox=\"25 -124 141 229\" aria-hidden=\"true\"><path transform=\"scale(1,-1)\" d=\"M61 -105 29 -46Q73 -29 73 0Q25 0 25 57Q25 86 44.5 105.0Q64 124 95 124Q126 124 146.0 99.5Q166 75 166 38Q166 -15 136.5 -55.0Q107 -95 61 -105Z\"/></svg>";var MAXPX=34.2,MINPX=11,EDGE=12;function SC(){return(parseFloat(getComputedStyle(document.documentElement).fontSize)||16)/16}function esc(t){return t.replace(/&/g,"&amp;").replace(/</g,"&lt;")}function fit(el,w){var K=SC(),MX=MAXPX*K,MN=MINPX*K;var cs=getComputedStyle(el),avail=el.clientWidth-parseFloat(cs.paddingRight)-EDGE*K;if(avail<=0)return;w.style.fontSize=MX+"px";var nat=w.offsetWidth,size=MX;if(nat>avail)size=Math.max(MN,MX*(avail-0.5)/nat);w.style.fontSize=size+"px";for(var i=0;i<3&&w.offsetWidth>avail&&size>MN;i++){size=Math.max(MN,size*(avail-0.5)/w.offsetWidth);w.style.fontSize=size+"px"}}var busy=false;function fix(){if(busy)return;busy=true;document.querySelectorAll(".currency-input").forEach(function(el){var w=el.children.length===1&&el.firstElementChild.classList.contains("num-inner")?el.firstElementChild:null;if(!w){var t=el.textContent;if(!t)return;w=document.createElement("span");w.className="num-inner";w.innerHTML=esc(t).split(",").join(SEP);el.textContent="";el.appendChild(w);fit(el,w)}});busy=false}function refitAll(){document.querySelectorAll(".currency-input").forEach(function(el){var w=el.firstElementChild;if(w&&w.classList&&w.classList.contains("num-inner"))fit(el,w)})}new MutationObserver(function(){fix()}).observe(document.body,{childList:true,subtree:true,characterData:true});var COPY_SVG="<rect x=\"9\" y=\"9\" width=\"13\" height=\"13\" rx=\"2\" ry=\"2\"></rect><path d=\"M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1\"></path>";var PASTE_SVG="<path d=\"M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2\"/><rect x=\"8\" y=\"2\" width=\"8\" height=\"4\" rx=\"1\" ry=\"1\"/>";function icons(){document.querySelectorAll(".copy-reveal-btn.is-copy svg, .copy-reveal-btn.is-paste svg").forEach(function(v){if(v.getAttribute("data-v")==="2")return;v.setAttribute("data-v","2");v.setAttribute("fill","none");v.setAttribute("stroke","currentColor");v.setAttribute("stroke-width","2.5");v.setAttribute("stroke-linecap","round");v.setAttribute("stroke-linejoin","round");v.innerHTML=v.parentNode.classList.contains("is-paste")?PASTE_SVG:COPY_SVG})}var rq=false;function later(){if(rq)return;rq=true;requestAnimationFrame(function(){rq=false;icons();document.querySelectorAll(".copy-reveal-btn").forEach(function(b){if(b.classList.contains("show")){b.style.width="";b.style.width=b.offsetHeight+"px"}else{b.style.width=""}});refitAll()})}new MutationObserver(later).observe(document.body,{attributes:true,attributeFilter:["class"],subtree:true,childList:true});window.addEventListener("resize",refitAll);if(document.fonts&&document.fonts.ready)document.fonts.ready.then(refitAll);document.addEventListener("DOMContentLoaded",function(){fix();refitAll()});fix()})();</script><script>__vr(4)</script>
+<script type="text/plain" id="calc-code">
+    (function () {
+        'use strict';
+
+        var mainEl = document.getElementById('c-main');
+        var secEl = document.getElementById('c-sec');
+        var unitsEl = document.getElementById('c-units');
+        /* ---------- magnitude words (ar / en / fr, by device language) ---------- */
+        var devLang = 'en';
+        try {
+            var nl = ((navigator.languages && navigator.languages[0]) || navigator.language || 'en').toLowerCase();
+            if (nl.indexOf('ar') === 0) devLang = 'ar';
+            else if (nl.indexOf('fr') === 0) devLang = 'fr';
+        } catch (e) {}
+        if (devLang === 'ar') unitsEl.classList.add('ar');
+
+        var WORDS = {
+            ar: { 1e3: ['\u0623\u0644\u0641'], 1e6: ['\u0645\u0644\u064A\u0648\u0646'], 1e9: ['\u0645\u0644\u064A\u0627\u0631'], 1e12: ['\u062A\u0631\u064A\u0644\u064A\u0648\u0646'] },
+            en: { 1e3: ['Thousand'], 1e6: ['Million'], 1e9: ['Billion'], 1e12: ['Trillion'] },
+            fr: { 1e3: ['mille'], 1e6: ['million', 'millions'], 1e9: ['milliard', 'milliards'], 1e12: ['billion', 'billions'] }
+        };
+
+        function compact(str) {
+            if (!str || /e/i.test(str)) return '';
+            var neg = str.charAt(0) === '-';
+            if (neg) str = str.slice(1);
+            var parts = str.split('.');
+            var ip = parts[0].replace(/^0+(?=\d)/, ''), fp = parts[1] || '';
+            var L = ip.length, shift, key;
+            if (L >= 13) { shift = 12; key = 1e12; }
+            else if (L >= 10) { shift = 9; key = 1e9; }
+            else if (L >= 7) { shift = 6; key = 1e6; }
+            else if (L >= 4) { shift = 3; key = 1e3; }
+            else return '';
+            var digits = ip + fp;
+            var intp = digits.slice(0, L - shift);
+            var fracAll = digits.slice(L - shift);
+            var keep = fracAll.slice(0, 2), rest = fracAll.slice(2);
+            var approx = /[1-9]/.test(rest);
+            if (rest.length && rest.charAt(0) >= '5') {
+                var bumped = (BigInt(intp + keep) + BigInt(1)).toString();
+                while (bumped.length <= keep.length) bumped = '0' + bumped;
+                intp = bumped.slice(0, bumped.length - keep.length);
+                keep = bumped.slice(bumped.length - keep.length);
+            }
+            if (intp === '1000' && key < 1e12) { intp = '1'; keep = ''; key = key * 1000; }
+            var frac = keep.replace(/0+$/, '');
+            var num = (approx ? '\u2248 ' : '') + (neg ? '\u2212' : '') + intp + (frac ? '.' + frac : '');
+            var forms = WORDS[devLang][key];
+            var word = (devLang === 'fr' && parseInt(intp, 10) >= 2 && forms[1]) ? forms[1] : forms[0];
+            if (devLang === 'ar') return '<bdi dir="ltr">' + num + '</bdi> ' + word;
+            return num + ' ' + word;
+        }
+
+        function renderUnits() {
+            var tok = '';
+            if (!errorState) {
+                tok = justEvaluated ? expr : expr.match(NUM_TAIL_RE)[0];
+            }
+            unitsEl.innerHTML = compact(tok);
+            var sc = parseFloat(getComputedStyle(document.documentElement).fontSize) / 16;
+            fit(unitsEl, (devLang === 'ar' ? 27 : 26) * sc, 14 * sc);
+        }
+
+        var MAX_DIGITS = 15;
+        var limitEl = document.getElementById('c-note');
+        var MSG = {
+            limit: {
+                ar: '\u0627\u0644\u062D\u062F \u0627\u0644\u0623\u0642\u0635\u0649 \u0644\u0644\u0631\u0642\u0645 ' + MAX_DIGITS + ' \u0631\u0642\u0645\u0627\u064B',
+                en: 'Maximum of ' + MAX_DIGITS + ' digits',
+                fr: 'Maximum de ' + MAX_DIGITS + ' chiffres'
+            },
+            copied: {
+                ar: '\u062A\u0645 \u0646\u0633\u062E \u0627\u0644\u0631\u0642\u0645',
+                en: 'Number copied',
+                fr: 'Nombre copi\u00E9'
+            },
+            failed: {
+                ar: '\u062A\u0639\u0630\u0651\u0631 \u0627\u0644\u0646\u0633\u062E',
+                en: 'Copy failed',
+                fr: '\u00C9chec de la copie'
+            }
+        };
+        var limitTimer = null;
+        if (devLang === 'ar') limitEl.classList.add('ar');
+        function showLimitNotice() { showNotice('limit'); }
+        function showNotice(kind) {
+            limitEl.textContent = MSG[kind][devLang];
+            limitEl.classList.add('show');
+            clearTimeout(limitTimer);
+            limitTimer = setTimeout(function () { limitEl.classList.remove('show'); }, 2000);
+        }
+        var SYMBOLS = { '+': '+', '-': '\u2212', '*': '\u00D7', '/': '\u00F7' };
+        var OP_RE = /[+\-*\/]/;
+        var NUM_TAIL_RE = /\d*\.?\d*$/;
+
+        var expr = '';
+        var lastExpr = '';
+        var justEvaluated = false;
+        var errorState = false;
+        var approxCarry = false;
+
+        /* ---------- formatting ---------- */
+
+        function fmtNumToken(t) {
+            if (/e/i.test(t)) return t;
+            var p = t.split('.');
+            var out = p[0].replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+            if (p.length > 1) out += '.' + p[1];
+            return out;
+        }
+
+        var OP_SVG = {
+            '+': '<svg class="op" viewBox="4 4 16 16" aria-hidden="true"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>',
+            '\u2212': '<svg class="op" viewBox="4 4 16 16" aria-hidden="true"><line x1="5" y1="12" x2="19" y2="12"/></svg>',
+            '\u00D7': '<svg class="op" viewBox="4 4 16 16" aria-hidden="true"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>',
+            '\u00F7': '<svg class="op" viewBox="4 4 16 16" aria-hidden="true"><circle cx="12" cy="5.5" r="1.8" class="dot"/><line x1="5" y1="12" x2="19" y2="12"/><circle cx="12" cy="18.5" r="1.8" class="dot"/></svg>'
+        };
+        function opHTML(str) {
+            return str.replace(/(?<![eE])\+|[\u2212\u00D7\u00F7]/g, function (c) { return OP_SVG[c]; });
+        }
+
+        function sepHTML(str) {
+            return opHTML(String(str)).replace(/,/g, '<svg class="sep" viewBox="25 -124 141 229" aria-hidden="true"><path transform="scale(1,-1)" d="M61 -105 29 -46Q73 -29 73 0Q25 0 25 57Q25 86 44.5 105.0Q64 124 95 124Q126 124 146.0 99.5Q166 75 166 38Q166 -15 136.5 -55.0Q107 -95 61 -105Z"/></svg>');
+        }
+
+        function fmtResult(r) {
+            return fmtNumToken(r).replace(/^-/, '\u2212');
+        }
+
+        function fmtExpr(e) {
+            return e
+                .replace(/(\d+\.?\d*(?:e[+\-]?\d+)?)|([+\-*\/])/gi, function (m, n, o) {
+                    if (n !== undefined) return fmtNumToken(n);
+                    return ' ' + SYMBOLS[o] + ' ';
+                })
+                .replace(/^\s\u2212\s/, '\u2212');
+        }
+
+        /* ---------- exact decimal arithmetic (BigInt) ---------- */
+        var ZERO = BigInt(0), TEN = BigInt(10);
+        function pow10(k) { return TEN ** BigInt(k); }
+        function normDec(d) {
+            while (d.s > 0 && d.n % TEN === ZERO) { d.n = d.n / TEN; d.s--; }
+            if (d.n === ZERO) d.s = 0;
+            return d;
+        }
+        function parseDec(t) {
+            var m = /^(\d+)(?:\.(\d*))?(?:e([+\-]?\d+))?$/i.exec(t);
+            if (!m) return null;
+            var frac = m[2] || '';
+            var n = BigInt(m[1] + frac);
+            var s = frac.length - (m[3] ? parseInt(m[3], 10) : 0);
+            if (s < 0) { n = n * pow10(-s); s = 0; }
+            return normDec({ n: n, s: s });
+        }
+        function negDec(d) { return { n: -d.n, s: d.s, x: d.x }; }
+        function addDec(a, b) {
+            var s = Math.max(a.s, b.s);
+            var r = normDec({ n: a.n * pow10(s - a.s) + b.n * pow10(s - b.s), s: s });
+            r.x = a.x || b.x;
+            return r;
+        }
+        function subDec(a, b) { return addDec(a, negDec(b)); }
+        function mulDec(a, b) {
+            var r = normDec({ n: a.n * b.n, s: a.s + b.s });
+            r.x = (a.x || b.x) && r.n !== ZERO;
+            return r;
+        }
+        function divDec(a, b) {
+            if (b.n === ZERO) return null;
+            var lenA = (a.n < ZERO ? -a.n : a.n).toString().length;
+            var lenB = (b.n < ZERO ? -b.n : b.n).toString().length;
+            var P = Math.max(30, 26 + lenB + a.s - lenA - b.s);
+            var num = a.n * pow10(b.s + P), den = b.n * pow10(a.s);
+            var r = normDec({ n: num / den, s: P });
+            r.x = a.x || b.x || (num % den !== ZERO);
+            return r;
+        }
+        var DEC100 = { n: BigInt(100), s: 0 };
+
+        /* decimal -> string. Exact whenever the value fits in 15 significant digits;
+           otherwise rounded (half up) to 15 digits and lastInexact is set to true. */
+        var lastInexact = false;
+        function numToStr(d) {
+            lastInexact = false;
+            if (!d) return null;
+            if (d.x) lastInexact = true;
+            if (d.n === ZERO) return '0';
+            var neg = d.n < ZERO;
+            var n = neg ? -d.n : d.n, sc = d.s;
+            var len = n.toString().length;
+            if (len > MAX_DIGITS) {
+                var drop = len - MAX_DIGITS;
+                var unit = pow10(drop);
+                if (n % unit !== ZERO) lastInexact = true;
+                n = (n + unit / BigInt(2)) / unit;
+                sc -= drop;
+                if (n.toString().length > MAX_DIGITS) { n = n / TEN; sc -= 1; }
+            }
+            while (n % TEN === ZERO) { n = n / TEN; sc--; }
+            var digits = n.toString();
+            var intDigits = digits.length - sc;
+            var out;
+            if (intDigits > MAX_DIGITS) {
+                out = digits.charAt(0) + (digits.length > 1 ? '.' + digits.slice(1) : '') + 'e' + (intDigits - 1);
+            } else if (sc - digits.length > 8) {
+                out = digits.charAt(0) + (digits.length > 1 ? '.' + digits.slice(1) : '') + 'e' + (intDigits - 1);
+            } else if (sc <= 0) {
+                out = digits + new Array(-sc + 1).join('0');
+            } else if (sc >= digits.length) {
+                out = '0.' + new Array(sc - digits.length + 1).join('0') + digits;
+            } else {
+                out = digits.slice(0, intDigits) + '.' + digits.slice(intDigits);
+            }
+            return (neg ? '-' : '') + out;
+        }
+
+        /* ---------- evaluation (no eval): returns an exact decimal, or null on error ---------- */
+
+        function evaluate(e) {
+            var parts = e.match(/\d+\.?\d*(?:e[+\-]?\d+)?|[+\-*\/]/gi) || [];
+            var nums = [], ops = [];
+            var expectNum = true, neg = false;
+            for (var i = 0; i < parts.length; i++) {
+                var p = parts[i];
+                if (/^\d/.test(p)) {
+                    if (!expectNum) return null;
+                    var dv = parseDec(p);
+                    if (!dv) return null;
+                    nums.push(neg ? negDec(dv) : dv);
+                    neg = false;
+                    expectNum = false;
+                } else if (expectNum) {
+                    if (p === '-' && !neg) neg = true; else return null;
+                } else {
+                    ops.push(p);
+                    expectNum = true;
+                }
+            }
+            if (expectNum || !nums.length) return null;
+
+            var vals = [nums[0]], addOps = [];
+            for (var k = 0; k < ops.length; k++) {
+                var v = nums[k + 1];
+                if (ops[k] === '*') {
+                    vals[vals.length - 1] = mulDec(vals[vals.length - 1], v);
+                } else if (ops[k] === '/') {
+                    var q = divDec(vals[vals.length - 1], v);
+                    if (!q) return null;
+                    vals[vals.length - 1] = q;
+                } else {
+                    addOps.push(ops[k]);
+                    vals.push(v);
+                }
+            }
+            var r = vals[0];
+            for (var j = 0; j < addOps.length; j++) {
+                r = addOps[j] === '+' ? addDec(r, vals[j + 1]) : subDec(r, vals[j + 1]);
+            }
+            return r;
+        }
+
+        /* ---------- display ---------- */
+
+        function fit(el, max, min) {
+            var size = max;
+            el.style.fontSize = size + 'px';
+            while (el.scrollWidth > el.clientWidth && size > min) {
+                size -= 2;
+                el.style.fontSize = size + 'px';
+            }
+        }
+
+        function fitMain() {
+            var inner = mainEl.querySelector('.c-num');
+            if (!inner) return;
+            var btn = mainEl.querySelector('.c-copy');
+            var natural = inner.offsetWidth, avail = mainEl.clientWidth;
+            var fs = parseFloat(getComputedStyle(mainEl).fontSize) || 64;
+            var COPY_SIZE = fs * 0.72, COPY_GAP = fs * 0.156;
+            var extra = btn ? COPY_SIZE + COPY_GAP : 0;
+            var k = natural + extra > avail && natural > 0 ? Math.max(avail / (natural + extra), 0.4) : 1;
+            inner.style.transform = k < 1 ? 'scale(' + k + ')' : '';
+            if (btn) {
+                btn.style.width = btn.style.height = (COPY_SIZE * k) + 'px';
+                btn.style.marginBottom = (fs * 0.39 * k) + 'px';
+                btn.style.transform = 'translateX(' + (natural * (1 - k) - COPY_GAP * k) + 'px)';
+            }
+        }
+        function render() {
+            var main, sec = '';
+            if (errorState) {
+                main = '\u062E\u0637\u0623';
+            } else if (justEvaluated) {
+                main = (approxCarry ? '\u2248 ' : '') + fmtExpr(expr);
+                sec = lastExpr;
+            } else {
+                main = expr === '' ? '0' : fmtExpr(expr);
+                var body = expr.replace(/^-/, '');
+                if (OP_RE.test(body) && !OP_RE.test(expr.slice(-1))) {
+                    var pv = numToStr(evaluate(expr));
+                    if (pv !== null) sec = fmtResult(pv);
+                }
+            }
+            var mainHTML;
+            mainHTML = sepHTML(main);
+            var freshMain = mainEl.cloneNode(false);
+            freshMain.innerHTML = (copyVisible && !errorState ? '<button type="button" class="c-copy" aria-label="Copy">' + COPY_SVG + '</button>' : '') + '<span class="c-num">' + mainHTML + '</span>';
+            mainEl.parentNode.replaceChild(freshMain, mainEl);
+            mainEl = freshMain;
+            secEl.innerHTML = sepHTML(sec);
+            fitMain();
+            if (animMode === 'all') {
+                [mainEl, secEl].forEach(function (el) {
+                    el.classList.remove('c-fade');
+                    void el.offsetWidth;
+                    el.classList.add('c-fade');
+                });
+            }
+            animMode = null;
+            fit(secEl, 22, 14);
+            renderUnits();
+        }
+
+        /* ---------- input ---------- */
+
+        function resetAfterError() {
+            errorState = false;
+            approxCarry = false;
+            expr = '';
+            lastExpr = '';
+            justEvaluated = false;
+        }
+
+        var animMode = null;
+
+        function inputDigit(d) {
+            if (justEvaluated) { expr = ''; lastExpr = ''; justEvaluated = false; approxCarry = false; }
+            var tok = expr.match(NUM_TAIL_RE)[0];
+            if (tok.replace('.', '').length >= MAX_DIGITS) { showLimitNotice(); return; }
+            if (tok === '0') {
+                if (d === '0') return;
+                expr = expr.slice(0, -1) + d;
+            } else {
+                expr += d;
+            }
+        }
+
+        function inputDot() {
+            if (justEvaluated) { expr = '0.'; lastExpr = ''; justEvaluated = false; approxCarry = false; return; }
+            var tok = expr.match(NUM_TAIL_RE)[0];
+            if (tok.indexOf('.') >= 0) return;
+            expr += tok === '' ? '0.' : '.';
+        }
+
+        function inputOp(sym) {
+            if (justEvaluated) { justEvaluated = false; lastExpr = ''; }
+            if (expr === '') { if (sym === '-') expr = '-'; return; }
+            if (expr === '-') return;
+            if (OP_RE.test(expr.slice(-1))) {
+                expr = expr.slice(0, -1) + sym;
+            } else {
+                expr += sym;
+            }
+        }
+
+        function inputPercent() {
+            if (justEvaluated) {
+                var neg0 = expr.charAt(0) === '-';
+                var r = parseDec(neg0 ? expr.slice(1) : expr);
+                if (!r) return;
+                if (neg0) r = negDec(r);
+                var res0 = numToStr(divDec(r, DEC100));
+                if (res0 === null) return;
+                if (lastInexact) approxCarry = true;
+                expr = res0;
+                return;
+            }
+            var m = expr.match(/(\d+\.?\d*(?:e[+\-]?\d+)?)$/i);
+            if (!m) return;
+            var n = parseDec(m[1]);
+            if (!n) return;
+            var prefix = expr.slice(0, expr.length - m[1].length);
+            var pm = prefix.match(/^(.+)([+\-])$/);
+            var rep;
+            if (pm) {
+                var base = evaluate(pm[1]);
+                if (!base) return;
+                rep = divDec(mulDec(base, n), DEC100);
+            } else {
+                rep = divDec(n, DEC100);
+            }
+            var repStr = numToStr(rep);
+            if (repStr === null) return;
+            if (lastInexact) approxCarry = true;
+            expr = prefix + repStr;
+        }
+        function inputBackspace() {
+            if (justEvaluated) {
+                justEvaluated = false;
+                lastExpr = '';
+                if (/e/i.test(expr)) { expr = ''; return; }
+            }
+            expr = expr.slice(0, -1);
+        }
+
+        function inputClear() {
+            expr = '';
+            lastExpr = '';
+            justEvaluated = false;
+            errorState = false;
+            approxCarry = false;
+        }
+
+        function inputEquals() {
+            if (justEvaluated) return;
+            var e = expr.replace(/[+\-*\/]+$/, '');
+            if (e === '' || !OP_RE.test(e.replace(/^-/, ''))) return;
+            var res = numToStr(evaluate(e));
+            var inexactNow = lastInexact;
+            if (res === null) {
+                errorState = true;
+                expr = '';
+                lastExpr = '';
+                return;
+            }
+            var shown = fmtExpr(e) + ' =';
+            approxCarry = inexactNow || approxCarry;
+            expr = res;
+            lastExpr = shown;
+            justEvaluated = true;
+        }
+
+        var OP_MAP = { divide: '/', multiply: '*', subtract: '-', add: '+' };
+
+        /* ---------- long-press copy ---------- */
+        var copyVisible = false, copyTimer = null, lpTimer = null, lpX = 0, lpY = 0;
+        var COPY_SVG = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>';
+
+        function getCopyValue() {
+            if (errorState) return '';
+            if (justEvaluated) return expr;
+            if (expr === '') return '0';
+            var m = /(\d+\.?\d*(?:e[+\-]?\d+)?)[+\-*\/]*$/i.exec(expr);
+            if (!m) return '';
+            var tok = m[1].replace(/\.$/, '');
+            if (m.index === 1 && expr.charAt(0) === '-') tok = '-' + tok;
+            return tok;
+        }
+        function copyText(text, cb) {
+            try { if (window.AndroidClipboard && window.AndroidClipboard.setClipboardText) { window.AndroidClipboard.setClipboardText(text); cb(true); return; } } catch (e) { }
+            function legacy() {
+                var ok = false;
+                try {
+                    var ta = document.createElement('textarea');
+                    ta.value = text;
+                    ta.setAttribute('readonly', '');
+                    ta.style.cssText = 'position:fixed;top:0;left:0;opacity:0;user-select:text;-webkit-user-select:text;';
+                    document.body.appendChild(ta);
+                    ta.select();
+                    ta.setSelectionRange(0, text.length);
+                    ok = document.execCommand('copy');
+                    document.body.removeChild(ta);
+                } catch (e) { ok = false; }
+                cb(ok);
+            }
+            if (navigator.clipboard && window.isSecureContext) {
+                navigator.clipboard.writeText(text).then(function () { cb(true); }, legacy);
+            } else {
+                legacy();
+            }
+        }
+        function showCopy() {
+            if (errorState || !getCopyValue()) return;
+            copyVisible = true;
+            clearTimeout(copyTimer);
+            try { if (navigator.vibrate) navigator.vibrate(12); } catch (e) { }
+            render();
+        }
+        function hideCopy() {
+            clearTimeout(copyTimer);
+            if (!copyVisible) return;
+            copyVisible = false;
+            render();
+        }
+        function doCopy() {
+            var val = getCopyValue();
+            if (!val) { hideCopy(); return; }
+            copyText(val, function (ok) {
+                copyVisible = false;
+                clearTimeout(copyTimer);
+                render();
+                showNotice(ok ? 'copied' : 'failed');
+            });
+        }
+        var wrapEl = document.getElementById('c-wrap');
+        wrapEl.addEventListener('pointerdown', function (e) {
+            if (e.target.closest('.c-copy')) return;
+            lpX = e.clientX; lpY = e.clientY;
+            clearTimeout(lpTimer);
+            lpTimer = setTimeout(function () { if (!copyVisible) showCopy(); }, 450);
+        });
+        wrapEl.addEventListener('pointermove', function (e) {
+            if (Math.abs(e.clientX - lpX) > 10 || Math.abs(e.clientY - lpY) > 10) clearTimeout(lpTimer);
+        });
+        ['pointerup', 'pointercancel', 'pointerleave'].forEach(function (t) {
+            wrapEl.addEventListener(t, function () { clearTimeout(lpTimer); });
+        });
+        wrapEl.addEventListener('contextmenu', function (e) { e.preventDefault(); });
+        wrapEl.addEventListener('click', function (e) {
+            if (e.target.closest('.c-copy')) doCopy();
+            else if (!copyVisible) showCopy();
+        });
+        document.addEventListener('pointerdown', function (e) {
+            if (copyVisible && !wrapEl.contains(e.target)) hideCopy();
+        });
+
+        function press(action, value) {
+            copyVisible = false; clearTimeout(copyTimer);
+            if (errorState && action !== 'clear') resetAfterError();
+            var before = expr;
+            switch (action) {
+                case 'number': inputDigit(value); break;
+                case 'dot': inputDot(); break;
+                case 'operator': inputOp(OP_MAP[value]); break;
+                case 'percent': inputPercent(); break;
+                case 'backspace': inputBackspace(); break;
+                case 'clear': inputClear(); break;
+                case 'calculate': inputEquals(); break;
+            }
+            if ((action === 'number' || action === 'dot') && expr !== before) animMode = 'last';
+            else if (action === 'backspace' && expr !== before) animMode = 'del';
+            else if ((action === 'calculate' || action === 'percent' || action === 'clear') && expr !== before) animMode = 'all';
+            render();
+        }
+
+        document.getElementById('c-keypad').addEventListener('click', function (ev) {
+            var btn = ev.target.closest('.cb');
+            if (!btn) return;
+            var action = btn.getAttribute('data-caction');
+            var value = action === 'number' ? btn.textContent.trim() : btn.getAttribute('data-cop');
+            press(action, value);
+        });
+
+        document.addEventListener('keydown', function (e) {
+            if (!document.getElementById('calc-screen').classList.contains('active')) return;
+            var k = e.key;
+            if (/^[0-9]$/.test(k)) press('number', k);
+            else if (k === '.' || k === ',') press('dot');
+            else if (k === '+') press('operator', 'add');
+            else if (k === '-') press('operator', 'subtract');
+            else if (k === '*') press('operator', 'multiply');
+            else if (k === '/') { e.preventDefault(); press('operator', 'divide'); }
+            else if (k === '%') press('percent');
+            else if (k === 'Enter' || k === '=') { e.preventDefault(); press('calculate'); }
+            else if (k === 'Backspace') press('backspace');
+            else if (k === 'Escape' || k === 'Delete') press('clear');
+        });
+
+        window.__calcRender = render;
+        window.addEventListener('resize', render);
+        if (document.fonts && document.fonts.ready) document.fonts.ready.then(render);
+        render();
+    })();
+    </script>
+<script>
+(function(){
+  var ok=false;
+  try{ new Function('return BigInt(2)**BigInt(3)'); new RegExp('(?<![eE])x'); ok=true; }catch(e){}
+  var btn=document.getElementById('open-calc-btn'), scr=document.getElementById('calc-screen'), back=document.getElementById('calc-back-btn');
+  if(!btn||!scr)return;
+  if(!ok){ btn.style.display='none'; return; }
+  // شيفرة الحاسبة تُحمَّل فقط على الأجهزة التي تدعم BigInt
+  try{ var s=document.createElement('script'); s.text=document.getElementById('calc-code').textContent; document.head.appendChild(s); }catch(e){ btn.style.display='none'; return; }
+  function openCalc(){
+    if(scr.classList.contains('active'))return;
+    scr.classList.add('active');
+    try{ history.pushState({calc:1},''); }catch(e){}
+    if(window.__calcRender){ setTimeout(window.__calcRender,0); }
+  }
+  function closeCalc(){ scr.classList.remove('active'); }
+  btn.addEventListener('click',openCalc);
+  back.addEventListener('click',function(){
+    if(history.state&&history.state.calc){ try{ history.back(); return; }catch(e){} }
+    closeCalc();
+  });
+  window.addEventListener('popstate',function(){ if(scr.classList.contains('active')) closeCalc(); });
+})();
+</script>
 </body>
 </html>
