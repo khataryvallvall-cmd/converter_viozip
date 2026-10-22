@@ -1160,6 +1160,70 @@ if(!e||"file"!==e.scheme){h=Zt;continue}switch(o){case gt:l.host=e.host,l.path=d
 }
 @media (prefers-reduced-motion: reduce) { #calc-screen .c-fade, #calc-screen .c-copy { animation: none; } #calc-screen .c-copy { opacity: 1; } }
 .live-stats-btn.calc-btn { margin-inline-end: 0; }
+
+/* ===== تكبير الأيقونات والخطوط الثابتة (px) لتتناسب مع الشاشات الكبيرة =====
+   كل شيء يتبع حجم الخط الجذري للصفحة (rem) مثل بقية التصميم */
+.keypad-section svg[width="16"],
+#calc-screen .c-keypad svg[width="16"],
+.live-stats-btn svg[width="16"],
+.back-btn svg[width="16"],
+.settings-back-btn svg[width="16"],
+#calc-screen .c-back svg[width="16"],
+#rates-screen svg[width="16"],
+#currencies-screen svg[width="16"] { width: 1rem; height: 1rem; }
+.keypad-section svg[width="18"],
+#calc-screen .c-keypad svg[width="18"],
+.live-stats-btn svg[width="18"],
+.back-btn svg[width="18"],
+.settings-back-btn svg[width="18"],
+#calc-screen .c-back svg[width="18"],
+#rates-screen svg[width="18"],
+#currencies-screen svg[width="18"] { width: 1.125rem; height: 1.125rem; }
+.keypad-section svg[width="21"],
+#calc-screen .c-keypad svg[width="21"],
+.live-stats-btn svg[width="21"],
+.back-btn svg[width="21"],
+.settings-back-btn svg[width="21"],
+#calc-screen .c-back svg[width="21"],
+#rates-screen svg[width="21"],
+#currencies-screen svg[width="21"] { width: 1.3125rem; height: 1.3125rem; }
+.keypad-section svg[width="24"],
+#calc-screen .c-keypad svg[width="24"],
+.live-stats-btn svg[width="24"],
+.back-btn svg[width="24"],
+.settings-back-btn svg[width="24"],
+#calc-screen .c-back svg[width="24"],
+#rates-screen svg[width="24"],
+#currencies-screen svg[width="24"] { width: 1.5rem; height: 1.5rem; }
+.keypad-section svg[width="26"],
+#calc-screen .c-keypad svg[width="26"],
+.live-stats-btn svg[width="26"],
+.back-btn svg[width="26"],
+.settings-back-btn svg[width="26"],
+#calc-screen .c-back svg[width="26"],
+#rates-screen svg[width="26"],
+#currencies-screen svg[width="26"] { width: 1.625rem; height: 1.625rem; }
+.keypad-section svg[width="28"],
+#calc-screen .c-keypad svg[width="28"],
+.live-stats-btn svg[width="28"],
+.back-btn svg[width="28"],
+.settings-back-btn svg[width="28"],
+#calc-screen .c-back svg[width="28"],
+#rates-screen svg[width="28"],
+#currencies-screen svg[width="28"] { width: 1.75rem; height: 1.75rem; }
+.keypad-section svg[width="30"],
+#calc-screen .c-keypad svg[width="30"],
+.live-stats-btn svg[width="30"],
+.back-btn svg[width="30"],
+.settings-back-btn svg[width="30"],
+#calc-screen .c-back svg[width="30"],
+#rates-screen svg[width="30"],
+#currencies-screen svg[width="30"] { width: 1.875rem; height: 1.875rem; }
+#lbl-rates-title { font-size: 1.0625rem !important; }
+#lbl-rates-title svg { vertical-align: -0.1em; }
+#rates-screen .settings-top-header { padding-bottom: 0.375rem !important; }
+#rates-content { padding: 0 1rem 1.25rem 1rem !important; gap: 0.75rem !important; }
+#currency-list-title { font-size: 0.9375rem !important; gap: 0.375rem !important; }
 </style>
     
     
