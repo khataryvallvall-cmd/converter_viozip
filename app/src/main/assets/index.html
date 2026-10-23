@@ -1859,7 +1859,7 @@ if(!e||"file"!==e.scheme){h=Zt;continue}switch(o){case gt:l.host=e.host,l.path=d
             freshMain.innerHTML = (copyVisible && !errorState ? '<button type="button" class="c-copy" aria-label="Copy">' + COPY_SVG + '</button>' : '') + '<span class="c-num">' + mainHTML + '</span>';
             mainEl.parentNode.replaceChild(freshMain, mainEl);
             mainEl = freshMain;
-            secEl.innerHTML = sepHTML(sec);
+            secEl.innerHTML = '';
             fitMain();
             if (animMode === 'all') {
                 [mainEl, secEl].forEach(function (el) {
