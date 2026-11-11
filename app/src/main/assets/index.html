@@ -52,16 +52,35 @@ if(!e||"file"!==e.scheme){h=Zt;continue}switch(o){case gt:l.host=e.host,l.path=d
     <script type="text/plain" id="vm0">
         (function () {
             var htmlEl = document.documentElement;
-            function reveal() { htmlEl.classList.remove('fonts-loading'); }
-            if (document.fonts && document.fonts.ready) {
-                document.fonts.ready.then(reveal);
-            } else {
-                reveal();
+            var done = false;
+            function reveal() {
+                if (done) return;
+                done = true;
+                htmlEl.classList.remove('fonts-loading');
             }
-            // شبكة أمان: لو لأي سبب ما اكتشف جاهزية الخط، تظهر الواجهة أوتوماتيكياً بعد نص ثانية
-            setTimeout(reveal, 500);
+            // نُبقي الواجهة مخفية حتى يكتمل تحميل الصفحة وتنتهي سكربتات الترتيب وضبط الأرقام،
+            // ثم تظهر دفعة واحدة بتصميمها النهائي بدون أي مرحلة وسطية مشوّهة
+            function revealSoon() {
+                function go() {
+                    requestAnimationFrame(function () {
+                        requestAnimationFrame(function () { setTimeout(reveal, 60); });
+                    });
+                }
+                if (document.fonts && document.fonts.ready) {
+                    document.fonts.ready.then(go);
+                } else {
+                    go();
+                }
+            }
+            if (document.readyState === 'complete') {
+                revealSoon();
+            } else {
+                window.addEventListener('load', revealSoon);
+            }
+            // شبكة أمان: لو تعطّل أي شيء، تظهر الواجهة بعد 4 ثوانٍ على الأكثر
+            setTimeout(reveal, 4000);
         })();
-    </script><script type="text/plain" id="vl0">(function(){var htmlEl=document.documentElement;function reveal(){htmlEl.classList.remove("fonts-loading")}if(document.fonts&&document.fonts.ready){document.fonts.ready.then(reveal)}else{reveal()}setTimeout(reveal,500)})();</script><script>__vr(0)</script>
+    </script><script type="text/plain" id="vl0">(function(){var htmlEl=document.documentElement,done=false;function reveal(){if(done)return;done=true;htmlEl.classList.remove("fonts-loading")}function revealSoon(){function go(){requestAnimationFrame(function(){requestAnimationFrame(function(){setTimeout(reveal,60)})})}if(document.fonts&&document.fonts.ready){document.fonts.ready.then(go)}else{go()}}if(document.readyState==="complete"){revealSoon()}else{window.addEventListener("load",revealSoon)}setTimeout(reveal,4000)})();</script><script>__vr(0)</script>
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <meta name="color-scheme" content="dark">
     <meta name="theme-color" content="#000000">
