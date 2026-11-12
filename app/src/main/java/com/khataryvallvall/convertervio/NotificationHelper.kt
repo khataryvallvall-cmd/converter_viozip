@@ -7,6 +7,7 @@ import android.app.PendingIntent
 import android.content.Context
 import android.content.Intent
 import android.os.Build
+import androidx.core.app.AlarmManagerCompat
 import java.util.Calendar
 
 // كل ما يخص جدولة التذكير اليومي وإنشاء قناة الإشعارات، في مكان واحد
@@ -15,9 +16,10 @@ object NotificationHelper {
     const val CHANNEL_ID = "daily_reminder_channel"
     private const val REQUEST_CODE = 1001
 
-    // الوقت الافتراضي للتذكير اليومي — الساعة 6:00 مساءً بالتوقيت المحلي للجهاز
+    // الوقت الافتراضي للتذكير اليومي — الساعة 9:00 صباحًا بالتوقيت المحلي للجهاز
+    // (يُحسب على توقيت بلد المستخدم نفسه، فيصل صباحًا في كل الدول)
     // يمكن تغييره لاحقًا بسهولة من هنا فقط
-    private const val DEFAULT_HOUR = 18
+    private const val DEFAULT_HOUR = 9
     private const val DEFAULT_MINUTE = 0
 
     fun createNotificationChannel(context: Context) {
@@ -55,12 +57,15 @@ object NotificationHelper {
             }
         }
 
-        // منبّه غير دقيق بالميلي ثانية (فرق بضع دقائق مقبول لتذكير بسيط)
-        // ولا يحتاج صلاحية خاصة من المستخدم على أندرويد 12+
-        alarmManager.setInexactRepeating(
+        // منبّه للمرة القادمة فقط (يُعاد جدولته يوميًا من DailyReminderReceiver)
+        // هكذا تُحسب الساعة 9:00 من جديد كل يوم بحسب التوقيت المحلي الحالي للجهاز،
+        // فلا يتأثر بتغيير المنطقة الزمنية أو التوقيت الصيفي/الشتوي
+        // غير دقيق بالدقيقة (فرق بضع دقائق مقبول) ولا يحتاج صلاحية خاصة على أندرويد 12+
+        alarmManager.cancel(pendingIntent)
+        AlarmManagerCompat.setAndAllowWhileIdle(
+            alarmManager,
             AlarmManager.RTC_WAKEUP,
             calendar.timeInMillis,
-            AlarmManager.INTERVAL_DAY,
             pendingIntent
         )
     }
