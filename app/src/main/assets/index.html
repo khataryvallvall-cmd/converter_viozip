@@ -56,6 +56,8 @@ if(!e||"file"!==e.scheme){h=Zt;continue}switch(o){case gt:l.host=e.host,l.path=d
     <link rel="manifest" href="manifest.json">
     <link rel="icon" href="icon-192.png">
     <title>Converter Vio</title>
+    <style id="boot-gate">html.pre-boot body{visibility:hidden}</style>
+    <script>setTimeout(function(){document.documentElement.classList.remove("pre-boot")},7000);</script>
 
     <style>
         :root {
@@ -2177,6 +2179,62 @@ if(!e||"file"!==e.scheme){h=Zt;continue}switch(o){case gt:l.host=e.host,l.path=d
     var m=document.querySelector('.currencies-section');if(!m)return;
     new MutationObserver(function(){clearTimeout(saveT);saveT=setTimeout(saveSel,400);}).observe(m,{subtree:true,childList:true,attributes:true,attributeFilter:['class','data-type'],characterData:true});
   }catch(e){}}
+  // ===== الأسعار: جاهزية + تسريع + إعادة محاولة =====
+  function fiatOk(){try{return typeof ratesCache==='object'&&!!ratesCache&&Object.keys(ratesCache).length>=5;}catch(e){return false;}}
+  function cryptoOk(){try{return typeof cryptoCache==='object'&&!!cryptoCache&&cryptoCache.BTC>0;}catch(e){return false;}}
+  function ratesReady(){return fiatOk()&&cryptoOk();}
+  var pendingRates=0;
+  // طلبات الأسعار: المصدران الاحتياطيان للعملات يُجرَّبان معًا (الأسرع يفوز) بدل الانتظار المتتالي، مع عدّاد للطلبات الجارية
+  function installRateFetch(){try{
+    var of=window.fetch; if(typeof of!=='function'||of.__rateShim)return;
+    var A='https://cdn.jsdelivr.net/npm/@fawazahmed0/currency-api@latest/v1/currencies/usd.min.json';
+    var B='https://latest.currency-api.pages.dev/v1/currencies/usd.min.json';
+    var lastFail=0;
+    function race(q,o){return new Promise(function(res,rej){
+      var n=0,done=false;
+      function fail(){n++; if(n===2&&!done){done=true;lastFail=Date.now();rej(new Error('rates'));}}
+      [A+q,B+q].forEach(function(u){
+        of.call(window,u,o).then(function(r){ if(done)return; if(r&&r.ok){done=true;res(r);}else fail(); },fail);
+      });
+    });}
+    var w=function(u,o){
+      var s='';try{s=typeof u==='string'?u:((u&&u.url)||'');}catch(e){}
+      var p, isA=s.indexOf(A)===0, isB=s.indexOf(B)===0;
+      if(isA){p=race(s.slice(A.length),o);}
+      else if(isB){ p=(Date.now()-lastFail<1500)?Promise.reject(new Error('rates')):race(s.slice(B.length),o); }
+      else p=of.apply(this,arguments);
+      if(/currency-api|api\.binance\.com|api\.coingecko\.com/.test(s)){
+        pendingRates++; var d=function(){pendingRates--;}; p.then(d,d);
+      }
+      return p;
+    };
+    w.__rateShim=true; window.fetch=w;
+  }catch(e){}}
+  // إظهار الواجهة فقط عندما تصبح الأسعار جاهزة (من الكاش أو من الشبكة)، بحدّ أقصى 4 ثوانٍ حتى لا تعلق الشاشة دون إنترنت
+  function waitForRatesThenUnveil(){
+    var t0=Date.now(), CAP=4000, done=false;
+    function reveal(){
+      if(done)return; done=true;
+      try{ if(typeof convertAllRows==='function')convertAllRows(); }catch(e){}
+      requestAnimationFrame(function(){ requestAnimationFrame(unveil); });
+    }
+    (function wait(){ if(ratesReady()||Date.now()-t0>=CAP){reveal();return;} setTimeout(wait,40); })();
+  }
+  // إن فشل الجلب أو لم تصل الأسعار: إعادة المحاولة تلقائيًا (بدل الانتظار 10 دقائق) وعند عودة الإنترنت
+  function startRatesRetry(){
+    var delay=1500, timer=null;
+    function attempt(){
+      if(ratesReady())return;
+      if(pendingRates===0){
+        try{ if(!fiatOk()) fetchFiatRates(); }catch(e){}
+        try{ if(!cryptoOk()) fetchCryptoRates(); }catch(e){}
+        delay=Math.min(delay*2,30000);
+      }
+      clearTimeout(timer); timer=setTimeout(attempt,delay);
+    }
+    timer=setTimeout(attempt,delay);
+    window.addEventListener('online',function(){ delay=1500; clearTimeout(timer); attempt(); });
+  }
   function boot(){
     if(started)return; started=true;
     // الشيفرات الخلفية تُنفَّذ بعد رسم الشاشة الرئيسية؛ نعيد تشغيل مستمعي DOMContentLoaded/load التي فاتها وقتها
@@ -2186,13 +2244,17 @@ if(!e||"file"!==e.scheme){h=Zt;continue}switch(o){case gt:l.host=e.host,l.path=d
       if(late&&fn){var self=this;setTimeout(function(){try{var ev=new Event(type);typeof fn==='function'?fn.call(self,ev):fn.handleEvent(ev);}catch(e){}},0);return;}
       return orig.call(this,type,fn,opt);
     };
-    try{ __vr(1); __vr(2); __vr(3); __vr(4); calcInit(); }catch(e){}
+    installRateFetch();
+    window.__bootErrors=[];
+    [function(){__vr(1);},function(){__vr(2);},function(){__vr(3);},function(){__vr(4);},function(){calcInit();}].forEach(function(step,i){
+      try{ step(); }catch(e){ window.__bootErrors.push(i+':'+(e&&e.message)); }
+    });
     P.addEventListener=orig;
     window.__booted=true;
     watch();
     setTimeout(function(){var q=window.__tapQ||[];window.__tapQ=[];(function next(){var t=q.shift();if(!t)return;try{if(document.contains(t))t.click();}catch(e){}setTimeout(next,0);})();},60);
-    requestAnimationFrame(function(){ requestAnimationFrame(unveil); });
-    setTimeout(unveil,1500);
+    waitForRatesThenUnveil();
+    startRatesRetry();
   }
   function schedule(){
     requestAnimationFrame(function(){ setTimeout(boot,0); });
