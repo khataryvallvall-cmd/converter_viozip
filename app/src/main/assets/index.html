@@ -2210,7 +2210,7 @@ if(!e||"file"!==e.scheme){h=Zt;continue}switch(o){case gt:l.host=e.host,l.path=d
     };
     w.__rateShim=true; window.fetch=w;
   }catch(e){}}
-  // إظهار الواجهة فقط عندما تصبح الأسعار جاهزة (من الكاش أو من الشبكة)، بحدّ أقصى 4 ثوانٍ حتى لا تعلق الشاشة دون إنترنت
+  // إظهار الواجهة عندما تتوفر أسعار العملات (من الكاش المحفوظ فورًا، أو من الشبكة عند أول تشغيل فقط)، بحدّ أقصى 4 ثوانٍ؛ العملات الرقمية لا تؤخر الفتح حتى لا تعلق الشاشة دون إنترنت
   function waitForRatesThenUnveil(){
     var t0=Date.now(), CAP=4000, done=false;
     function reveal(){
@@ -2218,7 +2218,7 @@ if(!e||"file"!==e.scheme){h=Zt;continue}switch(o){case gt:l.host=e.host,l.path=d
       try{ if(typeof convertAllRows==='function')convertAllRows(); }catch(e){}
       requestAnimationFrame(function(){ requestAnimationFrame(unveil); });
     }
-    (function wait(){ if(ratesReady()||Date.now()-t0>=CAP){reveal();return;} setTimeout(wait,40); })();
+    (function wait(){ if(fiatOk()||Date.now()-t0>=CAP){reveal();return;} setTimeout(wait,40); })();
   }
   // إن فشل الجلب أو لم تصل الأسعار: إعادة المحاولة تلقائيًا (بدل الانتظار 10 دقائق) وعند عودة الإنترنت
   function startRatesRetry(){
