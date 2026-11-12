@@ -13,7 +13,7 @@ import androidx.core.app.NotificationManagerCompat
 class DailyReminderReceiver : BroadcastReceiver() {
 
     override fun onReceive(context: Context, intent: Intent) {
-        // أعد جدولة تذكير الغد أولًا (9:00 صباحًا بالتوقيت المحلي الحالي)
+        // أعد جدولة تذكير الغد أولًا (7:00 صباحًا بالتوقيت المحلي الحالي)
         NotificationHelper.scheduleDailyReminder(context)
 
         // على أندرويد 13+ يجب التأكد أن صلاحية الإشعارات ممنوحة قبل العرض
