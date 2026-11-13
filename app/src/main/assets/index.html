@@ -1309,16 +1309,7 @@ if(!e||"file"!==e.scheme){h=Zt;continue}switch(o){case gt:l.host=e.host,l.path=d
   #calc-screen .c-keypad { grid-area: pad; min-width: 0; min-height: 0; flex: none; }
 }
 @media (prefers-reduced-motion: reduce) { #calc-screen .c-fade, #calc-screen .c-copy { animation: none; } #calc-screen .c-copy { opacity: 1; } }
-.live-stats-btn.calc-btn {
-  margin-inline-end: 0.45rem;
-  width: 2.5rem; height: 2.5rem; min-width: 2.5rem;
-  border-radius: 50%;
-  background: #ff9500;
-  box-shadow: 0 2px 8px rgba(255,149,0,0.28);
-  transition: transform 0.12s ease, filter 0.12s ease;
-  -webkit-tap-highlight-color: transparent;
-}
-.live-stats-btn.calc-btn:active { transform: scale(0.9); filter: brightness(0.9); }
+.live-stats-btn.calc-btn { margin-inline-end: 0; }
 
 /* ===== تكبير الأيقونات والخطوط الثابتة (px) لتتناسب مع الشاشات الكبيرة =====
    كل شيء يتبع حجم الخط الجذري للصفحة (rem) مثل بقية التصميم */
@@ -1417,8 +1408,8 @@ if(!e||"file"!==e.scheme){h=Zt;continue}switch(o){case gt:l.host=e.host,l.path=d
             
             <div class="header-right">
                 <button type="button" class="live-stats-btn calc-btn" id="open-calc-btn" aria-label="Calculator">
-                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round">
-                        <path d="M5.5 8H10.5M8 5.5V10.5M13.5 8H18.5M5.9 13.9L10.1 18.1M10.1 13.9L5.9 18.1M13.5 14.8H18.5M13.5 17.2H18.5"></path>
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="#ffb74d">
+                        <path d="M12 2.5A9.5 9.5 0 0 0 2.5 12A9.5 9.5 0 0 0 12 21.5A9.5 9.5 0 0 0 21.5 12A9.5 9.5 0 0 0 12 2.5M13 7.1L14.1 6L15.5 7.4L16.9 6L18 7.1L16.6 8.5L18 9.9L16.9 11L15.5 9.6L14.1 11L13 9.9L14.4 8.5L13 7.1M6.2 7.7H11.2V9.2H6.2V7.7M11.5 16H9.5V18H8V16H6V14.5H8V12.5H9.5V14.5H11.5V16M18 17.2H13V15.7H18V17.2M18 14.8H13V13.3H18V14.8Z"></path>
                     </svg>
                 </button>
                 <button type="button" class="live-stats-btn" id="open-rates-btn">
